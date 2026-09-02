@@ -1,17 +1,9 @@
-# Exclude directories
-.git/
-node_modules/
-dist/
-*.log
-web/.next/
-web/node_modules/
+.git
+.gitignore
+.env
+Dockerfile
+compose.yaml
+docker-compose.yml
 
-# Exclude editor and OS files
-.idea/
-.vscode/
-.DS_Store
-
-# Include shared code
-!shared/
-
-proto/
+tmp
+bin
