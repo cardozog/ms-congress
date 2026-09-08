@@ -17,3 +17,5 @@ func HandleErrorWithStatus(c *gin.Context, apiErr *ApiError) {
 }
 
 var ErroEmailJaCadastrado = errors.New("email já cadastrado")
+
+var ErroEventoNaoEncontrado = errors.New("evento não encontrado")

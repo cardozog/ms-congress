@@ -11,7 +11,11 @@ type EventoRepository struct {
 }
 
 type EventoRepositoryInterface interface {
-	// Define os métodos que o repositório de eventos deve implementar
+	Create(evento *models.Evento) error
+	GetByID(id uint64) (*models.Evento, error)
+	BuscarEventosPorOrganizador(organizadorID uint64) ([]models.Evento, error)
+	Update(evento *models.Evento) error
+	Delete(evento *models.Evento) error
 }
 
 func NewEventoRepository(db *gorm.DB) EventoRepositoryInterface {
@@ -41,4 +45,18 @@ func (r *EventoRepository) BuscarEventosPorOrganizador(organizadorID uint64) ([]
 		return nil, err
 	}
 	return eventos, nil
+}
+
+func (r *EventoRepository) Update(evento *models.Evento) error {
+	if err := r.db.Save(evento).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *EventoRepository) Delete(evento *models.Evento) error {
+	if err := r.db.Delete(evento).Error; err != nil {
+		return err
+	}
+	return nil
 }

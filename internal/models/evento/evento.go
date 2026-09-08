@@ -21,6 +21,7 @@ type Evento struct {
 	Cidade     string `gorm:"not null"`
 	Estado     string `gorm:"not null"`
 	CEP        string `gorm:"not null"`
+	EventoLogo string `gorm:"null"`
 
 	Ingressos []EventoIngresso `gorm:"foreignKey:EventoID"`
 }
