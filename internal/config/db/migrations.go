@@ -107,7 +107,7 @@ func seedData(database *gorm.DB) error {
 		if err := seedUsuarioRole(tx, organizador.ID, roles["ORGANIZADOR"].ID); err != nil {
 			return err
 		}
-		organizacao, err := seedPessoaJuridica(tx, organizador.ID, "Congresso Local LTDA", "Congresso Local", "00000000000191")
+		organizacao, err := seedPessoaJuridica(tx, organizador.ID, "Congresso Local LTDA", "Congresso Local", "00000000000131")
 		if err != nil {
 			return err
 		}

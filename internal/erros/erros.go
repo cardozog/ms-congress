@@ -25,3 +25,7 @@ var ErroCredenciaisObrigatorias = errors.New("email e senha são obrigatórios")
 var ErroCredenciaisInvalidas = errors.New("email ou senha inválidos")
 
 var ErroConfiguracaoToken = errors.New("segredo do token não configurado")
+
+var ErroTokenInvalido = errors.New("token inválido")
+
+var ErroUsuarioNaoAutorizado = errors.New("usuário não autorizado")
