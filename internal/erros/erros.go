@@ -19,3 +19,9 @@ func HandleErrorWithStatus(c *gin.Context, apiErr *ApiError) {
 var ErroEmailJaCadastrado = errors.New("email já cadastrado")
 
 var ErroEventoNaoEncontrado = errors.New("evento não encontrado")
+
+var ErroCredenciaisObrigatorias = errors.New("email e senha são obrigatórios")
+
+var ErroCredenciaisInvalidas = errors.New("email ou senha inválidos")
+
+var ErroConfiguracaoToken = errors.New("segredo do token não configurado")
