@@ -32,10 +32,10 @@ func main() {
 		log.Fatalf("run PostgreSQL migrations: %v", err)
 	}
 
-	if err := app.InitApp(ctx, gormDB); err != nil {
+	router, err := app.InitApp(ctx, gormDB)
+	if err != nil {
 		log.Fatalf("init app: %v", err)
 	}
+	router.Run(":8080")
 
-	log.Println("API started")
-	<-ctx.Done()
 }

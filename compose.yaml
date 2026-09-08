@@ -9,6 +9,8 @@ services:
     environment:
       DB_URL: postgres://postgres:postgres@postgres:5432/ms_congress?sslmode=disable
       DB_NAME: ms_congress
+      ADMIN_EMAIL: admin@local.com
+      ADMIN_PASSWORD: admin123
     ports:
       - "8080:8080"
     restart: unless-stopped

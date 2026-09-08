@@ -1,9 +1,13 @@
 .git
 .gitignore
-.env
 Dockerfile
-compose.yaml
-docker-compose.yml
+.dockerignore
 
-tmp
-bin
+.env
+.env.*
+*.log
+
+tmp/
+dist/
+bin/
+coverage/
