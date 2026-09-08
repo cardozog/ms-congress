@@ -50,7 +50,12 @@ func (h *EventoHandler) Criar(c *gin.Context) {
 		erros.HandleErrorWithStatus(c, apiErr)
 		return
 	}
-	c.JSON(http.StatusCreated, evento)
+	eventoCriado, apiErr := h.service.BuscarPorID(evento.ID)
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	c.JSON(http.StatusCreated, models.NovoEventoDetalhadoDTO(*eventoCriado))
 }
 
 func (h *EventoHandler) BuscarPorID(c *gin.Context) {
@@ -63,7 +68,7 @@ func (h *EventoHandler) BuscarPorID(c *gin.Context) {
 		erros.HandleErrorWithStatus(c, apiErr)
 		return
 	}
-	c.JSON(http.StatusOK, evento)
+	c.JSON(http.StatusOK, models.NovoEventoDetalhadoDTO(*evento))
 }
 
 func (h *EventoHandler) BuscarPorOrganizador(c *gin.Context) {
@@ -105,7 +110,12 @@ func (h *EventoHandler) Atualizar(c *gin.Context) {
 		erros.HandleErrorWithStatus(c, apiErr)
 		return
 	}
-	c.JSON(http.StatusOK, evento)
+	eventoAtualizado, apiErr := h.service.BuscarPorID(evento.ID)
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	c.JSON(http.StatusOK, models.NovoEventoDetalhadoDTO(*eventoAtualizado))
 }
 
 func (h *EventoHandler) Excluir(c *gin.Context) {

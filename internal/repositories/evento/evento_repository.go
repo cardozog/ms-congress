@@ -33,7 +33,12 @@ func (r *EventoRepository) Create(evento *models.Evento) error {
 
 func (r *EventoRepository) GetByID(id uint64) (*models.Evento, error) {
 	var evento models.Evento
-	if err := r.db.First(&evento, id).Error; err != nil {
+	if err := r.db.
+		Preload("Organizador").
+		Preload("Ingressos").
+		Preload("Ingressos.TipoIngresso").
+		Preload("Ingressos.Ingressos").
+		First(&evento, id).Error; err != nil {
 		return nil, err
 	}
 	return &evento, nil
