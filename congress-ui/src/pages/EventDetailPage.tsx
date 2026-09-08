@@ -1,0 +1,15 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { deleteEvent, getEvent } from '../services/api'
+import { useSession } from '../session/useSession'
+import type { EventDetails } from '../types'
+import { errorMessage, formatDate } from '../utils'
+
+export function EventDetailPage() {
+  const { id } = useParams(); const { session } = useSession(); const navigate = useNavigate(); const [event, setEvent] = useState<EventDetails | null>(null); const [feedback, setFeedback] = useState(''); const [loading, setLoading] = useState(false)
+  useEffect(() => { if (!session || !id) return; const currentSession = session; async function load() { try { setEvent(await getEvent(currentSession, Number(id))) } catch (error) { setFeedback(errorMessage(error, 'Não foi possível carregar o evento.')) } } void load() }, [session, id])
+  async function remove() { if (!session || !event || !window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) return; setLoading(true); try { await deleteEvent(session, event.id); navigate('/eventos', { replace: true }) } catch (error) { setFeedback(errorMessage(error, 'Não foi possível excluir o evento.')) } finally { setLoading(false) } }
+  return <section className="detail-view"><Link className="back-button" to="/eventos">← Voltar para eventos</Link>{event ? <><div className="detail-heading"><div><span className="kicker">Detalhes do evento</span><h2>{event.nome}</h2><p>{event.descricao}</p></div><div className="detail-actions"><Link className="secondary-button" to={`/eventos/${event.id}/editar`}>Editar</Link><button className="danger-button" onClick={() => void remove()} disabled={loading}>Excluir</button></div></div><div className="detail-info"><Info label="Quando começa" value={formatDate(event.dataInicio, true)} /><Info label="Quando termina" value={formatDate(event.dataFim, true)} /><Info label="Local" value={`${event.cidade} / ${event.estado}`} /><Info label="Endereço" value={event.logradouro} /><Info label="CEP" value={event.cep} /></div><section className="ticket-summary"><div className="ticket-summary-heading"><span className="kicker">Ingressos</span><p>Totais e disponibilidade atual por tipo.</p></div><div className="ticket-summary-list">{event.ingressos.map((ticket) => <div className="ticket-summary-row" key={ticket.id}><div><strong>{ticket.tipoIngresso.nome}</strong><small>{formatCurrency(ticket.preco)}</small></div><div><span>Total</span><strong>{ticket.quantidade}</strong></div><div><span>Disponíveis</span><strong>{ticket.disponivel}</strong></div></div>)}</div></section></> : <div className="empty-state"><p>{feedback || 'Carregando detalhes...'}</p></div>}</section>
+}
+function Info({ label, value }: { label: string; value: string }) { return <div className="info-item"><span>{label}</span><strong>{value}</strong></div> }
+function formatCurrency(value: number) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value) }
