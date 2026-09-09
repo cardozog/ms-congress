@@ -30,6 +30,9 @@ func RunMigrations(ctx context.Context, database *gorm.DB) error {
 	if err := database.AutoMigrate(&Migration{}); err != nil {
 		return err
 	}
+	if err := database.Exec("ALTER TABLE evento_ingressos DROP COLUMN IF EXISTS disponivel").Error; err != nil {
+		return err
+	}
 
 	if err := database.AutoMigrate(
 		&models.Usuario{},
@@ -47,11 +50,6 @@ func RunMigrations(ctx context.Context, database *gorm.DB) error {
 		&eventos.Ingresso{},
 	); err != nil {
 		return err
-	}
-	if database.Migrator().HasColumn(&eventos.EventoIngresso{}, "Disponivel") {
-		if err := database.Migrator().DropColumn(&eventos.EventoIngresso{}, "Disponivel"); err != nil {
-			return err
-		}
 	}
 	if err := seedData(database); err != nil {
 		return err

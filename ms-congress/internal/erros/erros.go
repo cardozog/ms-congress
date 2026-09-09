@@ -20,6 +20,10 @@ var ErroEmailJaCadastrado = errors.New("email já cadastrado")
 
 var ErroEventoNaoEncontrado = errors.New("evento não encontrado")
 
+var ErroEventoPublicado = errors.New("evento publicado não pode ser editado")
+
+var ErroEventoNaoPublicado = errors.New("evento precisa estar publicado para ser encerrado")
+
 var ErroCredenciaisObrigatorias = errors.New("email e senha são obrigatórios")
 
 var ErroCredenciaisInvalidas = errors.New("email ou senha inválidos")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"ms-congress/internal/erros"
 	models "ms-congress/internal/models/evento"
@@ -18,6 +19,8 @@ type EventoServiceInterface interface {
 	BuscarPorID(id uint64) (*models.Evento, *erros.ApiError)
 	BuscarPorOrganizador(organizadorID uint64) ([]models.Evento, *erros.ApiError)
 	Atualizar(evento *models.Evento) *erros.ApiError
+	Publicar(id uint64) *erros.ApiError
+	Encerrar(id uint64) *erros.ApiError
 	Excluir(id uint64) *erros.ApiError
 	ListarTiposIngresso() ([]models.TipoIngresso, *erros.ApiError)
 }
@@ -71,10 +74,43 @@ func (s *EventoService) Atualizar(evento *models.Evento) *erros.ApiError {
 	if apiErr := validarEvento(evento, true); apiErr != nil {
 		return apiErr
 	}
-	if _, apiErr := s.BuscarPorID(evento.ID); apiErr != nil {
+	eventoAtual, apiErr := s.BuscarPorID(evento.ID)
+	if apiErr != nil {
 		return apiErr
 	}
+	evento.Publicado = eventoAtual.Publicado
 	if err := s.repository.Update(evento); err != nil {
+		return internalError(err)
+	}
+	return nil
+}
+
+func (s *EventoService) Publicar(id uint64) *erros.ApiError {
+	evento, apiErr := s.BuscarPorID(id)
+	if apiErr != nil {
+		return apiErr
+	}
+	if evento.Publicado {
+		return nil
+	}
+	if err := s.repository.Publicar(id); err != nil {
+		return internalError(err)
+	}
+	return nil
+}
+
+func (s *EventoService) Encerrar(id uint64) *erros.ApiError {
+	evento, apiErr := s.BuscarPorID(id)
+	if apiErr != nil {
+		return apiErr
+	}
+	if !evento.Publicado {
+		return &erros.ApiError{StatusCode: http.StatusConflict, Error: erros.ErroEventoNaoPublicado}
+	}
+	if evento.DataFim.Before(time.Now()) {
+		return nil
+	}
+	if err := s.repository.Encerrar(id, time.Now()); err != nil {
 		return internalError(err)
 	}
 	return nil
@@ -87,6 +123,9 @@ func (s *EventoService) Excluir(id uint64) *erros.ApiError {
 	evento, apiErr := s.BuscarPorID(id)
 	if apiErr != nil {
 		return apiErr
+	}
+	if evento.Publicado {
+		return &erros.ApiError{StatusCode: http.StatusConflict, Error: erros.ErroEventoPublicado}
 	}
 	if err := s.repository.Delete(evento); err != nil {
 		return internalError(err)

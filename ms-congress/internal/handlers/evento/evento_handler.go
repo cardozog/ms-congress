@@ -152,6 +152,40 @@ func (h *EventoHandler) Excluir(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h *EventoHandler) Publicar(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	if apiErr := h.service.Publicar(id); apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	evento, apiErr := h.service.BuscarPorID(id)
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	c.JSON(http.StatusOK, models.NovoEventoDetalhadoDTO(*evento))
+}
+
+func (h *EventoHandler) Encerrar(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	if apiErr := h.service.Encerrar(id); apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	evento, apiErr := h.service.BuscarPorID(id)
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	c.JSON(http.StatusOK, models.NovoEventoDetalhadoDTO(*evento))
+}
+
 func (request eventoRequest) toModel() models.Evento {
 	ingressos := make([]models.EventoIngresso, 0, len(request.Ingressos))
 	for _, ingresso := range request.Ingressos {

@@ -20,5 +20,7 @@ func SetupEventoRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	eventos.GET("/organizador/:organizadorId", handler.BuscarPorOrganizador)
 	eventos.GET("/:id", handler.BuscarPorID)
 	eventos.PUT("/:id", handler.Atualizar)
+	eventos.PATCH("/:id/publicar", handler.Publicar)
+	eventos.PATCH("/:id/encerrar", handler.Encerrar)
 	eventos.DELETE("/:id", handler.Excluir)
 }

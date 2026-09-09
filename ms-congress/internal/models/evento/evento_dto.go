@@ -34,6 +34,8 @@ type EventoDetalhadoDTO struct {
 	DataInicio    time.Time            `json:"dataInicio"`
 	DataFim       time.Time            `json:"dataFim"`
 	OrganizadorID uint64               `json:"organizadorID"`
+	Publicado     bool                 `json:"publicado"`
+	Encerrado     bool                 `json:"encerrado"`
 	Organizador   EventoOrganizadorDTO `json:"organizador"`
 	Logradouro    string               `json:"logradouro"`
 	Cidade        string               `json:"cidade"`
@@ -49,6 +51,8 @@ type EventoPorOrganizadorDTO struct {
 	Descricao     string    `json:"descricao"`
 	DataInicio    time.Time `json:"dataInicio"`
 	DataFim       time.Time `json:"dataFim"`
+	Publicado     bool      `json:"publicado"`
+	Encerrado     bool      `json:"encerrado"`
 	OrganizadorID uint64    `json:"organizadorID"`
 	EventoLogo    string    `json:"eventoLogo"`
 }
@@ -60,6 +64,8 @@ func NovoEventoPorOrganizadorDTO(evento Evento) EventoPorOrganizadorDTO {
 		Descricao:     evento.Descricao,
 		DataInicio:    evento.DataInicio,
 		DataFim:       evento.DataFim,
+		Publicado:     evento.Publicado,
+		Encerrado:     evento.DataFim.Before(time.Now()),
 		OrganizadorID: evento.OrganizadorID,
 		EventoLogo:    evento.EventoLogo,
 	}
@@ -82,7 +88,7 @@ func NovoEventoDetalhadoDTO(evento Evento) EventoDetalhadoDTO {
 
 	return EventoDetalhadoDTO{
 		ID: evento.ID, Nome: evento.Nome, Descricao: evento.Descricao,
-		DataInicio: evento.DataInicio, DataFim: evento.DataFim, OrganizadorID: evento.OrganizadorID,
+		DataInicio: evento.DataInicio, DataFim: evento.DataFim, Publicado: evento.Publicado, Encerrado: evento.DataFim.Before(time.Now()), OrganizadorID: evento.OrganizadorID,
 		Organizador: EventoOrganizadorDTO{
 			ID: evento.Organizador.ID, UsuarioID: evento.Organizador.UsuarioID,
 			RazaoSocial: evento.Organizador.RazaoSocial, NomeFantasia: evento.Organizador.NomeFantasia,

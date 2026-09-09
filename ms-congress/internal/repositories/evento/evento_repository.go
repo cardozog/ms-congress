@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	models "ms-congress/internal/models/evento"
 
 	"gorm.io/gorm"
@@ -15,6 +17,8 @@ type EventoRepositoryInterface interface {
 	GetByID(id uint64) (*models.Evento, error)
 	BuscarEventosPorOrganizador(organizadorID uint64) ([]models.Evento, error)
 	Update(evento *models.Evento) error
+	Publicar(id uint64) error
+	Encerrar(id uint64, dataFim time.Time) error
 	Delete(evento *models.Evento) error
 	ListarTiposIngresso() ([]models.TipoIngresso, error)
 }
@@ -74,15 +78,75 @@ func (r *EventoRepository) BuscarEventosPorOrganizador(organizadorID uint64) ([]
 }
 
 func (r *EventoRepository) Update(evento *models.Evento) error {
-	if err := r.db.Save(evento).Error; err != nil {
-		return err
-	}
-	return nil
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.Evento{}).Where("id = ?", evento.ID).Updates(map[string]interface{}{
+			"nome":           evento.Nome,
+			"descricao":      evento.Descricao,
+			"data_inicio":    evento.DataInicio,
+			"data_fim":       evento.DataFim,
+			"publicado":      evento.Publicado,
+			"organizador_id": evento.OrganizadorID,
+			"logradouro":     evento.Logradouro,
+			"cidade":         evento.Cidade,
+			"estado":         evento.Estado,
+			"cep":            evento.CEP,
+			"evento_logo":    evento.EventoLogo,
+		}).Error; err != nil {
+			return err
+		}
+
+		for _, ingresso := range evento.Ingressos {
+			updates := map[string]interface{}{
+				"preco":             ingresso.Preco,
+				"quantidade":        ingresso.Quantidade,
+				"data_inicio_venda": ingresso.DataInicioVenda,
+				"data_fim_venda":    ingresso.DataFimVenda,
+			}
+			result := tx.Model(&models.EventoIngresso{}).
+				Where("evento_id = ? AND tipo_ingresso_id = ?", evento.ID, ingresso.TipoIngressoID).
+				Updates(updates)
+			if result.Error != nil {
+				return result.Error
+			}
+			if result.RowsAffected == 0 {
+				if err := tx.Create(&models.EventoIngresso{
+					EventoID: evento.ID, TipoIngressoID: ingresso.TipoIngressoID,
+					Preco: ingresso.Preco, Quantidade: ingresso.Quantidade,
+					DataInicioVenda: ingresso.DataInicioVenda, DataFimVenda: ingresso.DataFimVenda,
+				}).Error; err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+}
+
+func (r *EventoRepository) Publicar(id uint64) error {
+	return r.db.Model(&models.Evento{}).Where("id = ?", id).Update("publicado", true).Error
+}
+
+func (r *EventoRepository) Encerrar(id uint64, dataFim time.Time) error {
+	return r.db.Model(&models.Evento{}).Where("id = ?", id).Update("data_fim", dataFim).Error
 }
 
 func (r *EventoRepository) Delete(evento *models.Evento) error {
-	if err := r.db.Delete(evento).Error; err != nil {
-		return err
-	}
-	return nil
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("evento_ingresso_id IN (?)",
+			tx.Model(&models.EventoIngresso{}).
+				Select("id").
+				Where("evento_id = ?", evento.ID),
+		).Delete(&models.Ingresso{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("evento_id = ?", evento.ID).
+			Delete(&models.EventoIngresso{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("id = ?", evento.ID).
+			Delete(&models.Evento{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }

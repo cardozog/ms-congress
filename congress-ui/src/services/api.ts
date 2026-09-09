@@ -44,4 +44,6 @@ export function getTicketTypes(session: Session) { return request<TicketType[]>(
 export function getEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}`, {}, session) }
 export function createEvent(session: Session, payload: EventPayload) { return request<EventDetails>('/eventos', { method: 'POST', body: JSON.stringify(payload) }, session) }
 export function updateEvent(session: Session, id: number, payload: EventPayload) { return request<EventDetails>(`/eventos/${id}`, { method: 'PUT', body: JSON.stringify(payload) }, session) }
+export function publishEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}/publicar`, { method: 'PATCH' }, session) }
+export function closeEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}/encerrar`, { method: 'PATCH' }, session) }
 export function deleteEvent(session: Session, id: number) { return request<void>(`/eventos/${id}`, { method: 'DELETE' }, session) }

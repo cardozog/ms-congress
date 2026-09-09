@@ -13,6 +13,7 @@ type Evento struct {
 	Descricao  string    `gorm:"not null"`
 	DataInicio time.Time `gorm:"not null"`
 	DataFim    time.Time `gorm:"not null"`
+	Publicado  bool      `gorm:"not null;default:false"`
 
 	OrganizadorID uint64                       `gorm:"not null;index"`
 	Organizador   usuariomodels.PessoaJuridica `gorm:"foreignKey:OrganizadorID"`

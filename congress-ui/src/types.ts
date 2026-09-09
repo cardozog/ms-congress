@@ -25,6 +25,8 @@ export interface EventSummary {
   descricao: string
   dataInicio: string
   dataFim: string
+  publicado: boolean
+  encerrado: boolean
   organizadorID: number
   eventoLogo?: string
 }
