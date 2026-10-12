@@ -1,4 +1,4 @@
-import type { AvailableEventGroup, Cart, EventDetails, EventPayload, EventSummary, Profile, Session, TicketType } from '../types'
+import type { AvailableEventGroup, Cart, EventDetails, EventPayload, EventSummary, MyEvent, Order, Profile, Session, TicketType } from '../types'
 
 const API_BASE_URL = 'http://localhost:8080/v1/api'
 const SESSION_KEY = 'ms-congress-session'
@@ -60,3 +60,15 @@ export function addCartItem(session: Session, eventoIngressoId: number, quantida
 export function updateCartItem(session: Session, itemId: number, quantidade: number) { return request<Cart>(`/carrinho/itens/${itemId}`, { method: 'PATCH', body: JSON.stringify({ quantidade }) }, session) }
 export function removeCartItem(session: Session, itemId: number) { return request<void>(`/carrinho/itens/${itemId}`, { method: 'DELETE' }, session) }
 export function clearCart(session: Session) { return request<void>('/carrinho', { method: 'DELETE' }, session) }
+export function createOrder(session: Session, idempotencyKey: string) {
+  return request<Order>('/pedidos', { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey } }, session)
+}
+export function startPayment(session: Session, orderId: number, idempotencyKey: string) {
+  return request<Order>(`/pedidos/${orderId}/pagamento`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey } }, session)
+}
+export function getOrder(session: Session, orderId: number) { return request<Order>(`/pedidos/${orderId}`, {}, session) }
+export function simulatePayment(session: Session, orderId: number, approved: boolean) {
+  return request<Order>(`/pedidos/${orderId}/pagamento/simular/${approved ? 'aprovar' : 'rejeitar'}`, { method: 'POST' }, session)
+}
+export function getMyEvents(session: Session) { return request<MyEvent[]>('/meus-eventos', {}, session) }
+export function getMyEvent(session: Session, eventId: number) { return request<MyEvent>(`/meus-eventos/${eventId}`, {}, session) }

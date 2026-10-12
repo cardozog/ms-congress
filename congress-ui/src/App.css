@@ -328,8 +328,38 @@
 .cart-item > strong { text-align:right; }
 .cart-total { display:flex; justify-content:space-between; align-items:center; margin-top:24px; padding:24px 0; border-top:2px solid var(--ink); font-size:14px; }
 .cart-total strong { font-family:Georgia,serif; font-size:26px; font-weight:normal; }
+.checkout-view { max-width:1100px; margin:0 auto; padding:40px 0 80px; }
+.checkout-grid { display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:42px; margin-top:28px; }
+.checkout-summary { align-self:start; border:1px solid var(--line); padding:24px; }
+.checkout-summary p { color:var(--muted); word-break:break-word; }
+.checkout-summary small { display:block; margin-top:14px; color:var(--muted); line-height:1.5; }
+.checkout-summary .primary-button { width:100%; }
+.payment-actions { display:flex; flex-direction:column; gap:10px; margin:20px 0; }
+.my-events-view { max-width:1100px; margin:0 auto; padding:35px 0 80px; }
+.event-filters { display:flex; gap:8px; background:var(--soft); border-radius:24px; padding:4px; margin-bottom:24px; }
+.event-filters button { flex:1; border:0; background:transparent; border-radius:20px; padding:10px 16px; color:var(--muted); cursor:pointer; }
+.event-filters button.active { background:var(--paper); color:var(--ink); box-shadow:0 1px 5px rgba(0,0,0,.08); }
+.my-event-list { display:grid; gap:16px; }
+.my-event-card { display:flex; gap:18px; border:1px solid var(--line); border-radius:16px; padding:14px; }
+.my-event-cover { flex:0 0 116px; height:154px; border-radius:12px; overflow:hidden; background:var(--soft); display:grid; place-items:center; color:var(--muted); text-align:center; }
+.my-event-cover img { width:100%; height:100%; object-fit:cover; }
+.my-event-content { min-width:0; flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+.my-event-card h2 { font-family:Georgia,serif; font-size:25px; font-weight:normal; margin:0; }
+.my-event-content p { margin:0; color:var(--muted); }
+.event-status, .purchase-confirmed { color:var(--green); font-size:13px; }
+.my-event-content .primary-button { width:100%; margin-top:auto; }
+.credential-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:22px; }
+.credential-card { border:1px solid var(--line); padding:18px; display:flex; flex-direction:column; gap:8px; background:var(--paper); }
+.credential-card span { color:var(--muted); font-size:12px; }
+.credential-card code { letter-spacing:.08em; font-size:14px; }
 @media (max-width:800px) {
-  .discovery-view { padding-top:32px; }
+  .discovery-view { padding-top:32px;     .checkout-grid { grid-template-columns:1fr; gap:20px; }
+    .checkout-view { padding:24px 0 50px; }
+    .my-events-view { padding:24px 0 50px; }
+    .my-event-card { align-items:stretch; }
+    .my-event-cover { flex-basis:92px; height:126px; }
+    .my-event-card h2 { font-size:21px; }
+  }
   .discovery-heading { align-items:start; }
   .discovery-heading h2 { font-size:38px; }
   .discovery-card { flex-basis:78vw; }

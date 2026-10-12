@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	eventos "ms-congress/internal/models/evento"
+	pedidos "ms-congress/internal/models/pedido"
 	models "ms-congress/internal/models/usuario"
 
 	"os"
@@ -45,7 +46,13 @@ func RunMigrations(ctx context.Context, database *gorm.DB) error {
 		&eventos.TipoIngresso{},
 		&eventos.EventoIngresso{},
 		&eventos.Ingresso{},
+		&pedidos.Pedido{},
+		&pedidos.PedidoItem{},
+		&pedidos.Pagamento{},
 	); err != nil {
+		return err
+	}
+	if err := synchronizeSequences(database); err != nil {
 		return err
 	}
 	if err := seedData(database); err != nil {
@@ -56,6 +63,17 @@ func RunMigrations(ctx context.Context, database *gorm.DB) error {
 		Version: 1,
 		Name:    "initialize_schema_migrations",
 	}).Error
+}
+
+func synchronizeSequences(database *gorm.DB) error {
+	const query = `
+SELECT setval(
+	pg_get_serial_sequence('tb_pedido_item', 'id'),
+	COALESCE((SELECT MAX(id) FROM tb_pedido_item), 1),
+	(SELECT COUNT(*) > 0 FROM tb_pedido_item)
+);
+`
+	return database.Exec(query).Error
 }
 
 func seedData(database *gorm.DB) error {

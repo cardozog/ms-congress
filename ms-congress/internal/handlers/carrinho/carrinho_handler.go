@@ -46,6 +46,11 @@ func (h *CarrinhoHandler) Buscar(c *gin.Context) {
 	}
 	snapshot, apiErr := h.service.Buscar(cart.Itens)
 	if apiErr != nil {
+		if apiErr.Error != nil && apiErr.Error.Error() == "ingresso esgotado" {
+			h.clearCookie(c)
+			c.JSON(http.StatusOK, cartResponse{Itens: make([]cartItemResponse, 0)})
+			return
+		}
 		erros.HandleErrorWithStatus(c, apiErr)
 		return
 	}

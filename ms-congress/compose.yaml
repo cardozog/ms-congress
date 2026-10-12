@@ -13,6 +13,8 @@ services:
       ADMIN_PASSWORD: admin123
       JWT_SECRET: change-this-secret-in-development
       CART_COOKIE_SECRET: change-this-cart-secret-in-development
+      APP_ENV: development
+      PAYMENT_WEBHOOK_SECRET: change-this-payment-webhook-secret-in-development
     ports:
       - "8080:8080"
     restart: unless-stopped

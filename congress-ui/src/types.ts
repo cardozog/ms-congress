@@ -85,6 +85,37 @@ export interface Cart {
   valorTotal: number
 }
 
+export interface Order {
+  id: number
+  status: string
+  subtotal: number
+  total: number
+  expiraEm: string
+  pagamento?: { status: string; referenciaExterna?: string }
+}
+
+export interface AcquiredTicket {
+  id: number
+  codigo: string
+  status: string
+  eventoId: number
+  evento: string
+  ingresso: string
+  eventoLogo?: string
+}
+
+export interface MyEvent {
+  id: number
+  nome: string
+  dataInicio: string
+  dataFim: string
+  classificacao: 'UPCOMING' | 'ONGOING' | 'ENDED'
+  eventoLogo?: string
+  organizador?: { id: number; razaoSocial: string; nomeFantasia: string }
+  quantidade: number
+  ingressos: AcquiredTicket[]
+}
+
 export interface TicketPayload {
   tipo_ingresso_id: number
   preco: number
