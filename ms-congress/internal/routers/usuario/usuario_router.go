@@ -17,7 +17,7 @@ func SetupUsuarioRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	service := services.NewUsuarioService(repository)
 	handler := handlers.NewUsuarioHandler(service)
 
-	usuarios := router.Group("/usuarios", middlewares.AuthMiddleware(os.Getenv("JWT_SECRET")))
+	usuarios := router.Group("/usuarios", middlewares.AuthMiddleware(os.Getenv("JWT_SECRET")), middlewares.RequireAnyRole("ADMIN", "ORGANIZADOR", "IMPRENSA"))
 	usuarios.GET("/:usuarioId", handler.BuscarDetalhes)
 	usuarios.PUT("/:usuarioId/pessoa-fisica", handler.AtualizarPessoaFisica)
 	usuarios.PUT("/:usuarioId/pessoa-juridica", handler.AtualizarPessoaJuridica)

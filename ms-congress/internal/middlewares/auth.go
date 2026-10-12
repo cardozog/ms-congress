@@ -10,6 +10,7 @@ import (
 )
 
 const UsuarioIDContextKey = "usuarioID"
+const PapeisContextKey = "papeis"
 
 func AuthMiddleware(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -52,6 +53,53 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 		}
 
 		c.Set(UsuarioIDContextKey, uint(userID))
+		if roles, ok := claims["papeis"].([]interface{}); ok {
+			papeis := make([]string, 0, len(roles))
+			for _, role := range roles {
+				if value, ok := role.(string); ok {
+					papeis = append(papeis, value)
+				}
+			}
+			c.Set(PapeisContextKey, papeis)
+		}
 		c.Next()
+	}
+}
+
+func RequireRole(role string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		value, exists := c.Get(PapeisContextKey)
+		roles, ok := value.([]string)
+		if !exists || !ok {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"erro": "permissão insuficiente"})
+			return
+		}
+		for _, current := range roles {
+			if current == role {
+				c.Next()
+				return
+			}
+		}
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"erro": "permissão insuficiente"})
+	}
+}
+
+func RequireAnyRole(roles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		value, exists := c.Get(PapeisContextKey)
+		currentRoles, ok := value.([]string)
+		if !exists || !ok {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"erro": "permissão insuficiente"})
+			return
+		}
+		for _, current := range currentRoles {
+			for _, allowed := range roles {
+				if current == allowed {
+					c.Next()
+					return
+				}
+			}
+		}
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"erro": "permissão insuficiente"})
 	}
 }

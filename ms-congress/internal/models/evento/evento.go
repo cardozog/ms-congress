@@ -53,10 +53,13 @@ type EventoIngresso struct {
 type Ingresso struct {
 	ID uint64 `gorm:"primaryKey"`
 
-	EventoIngressoID uint64 `gorm:"not null;index"`
+	EventoIngressoID uint64  `gorm:"not null;index"`
+	UsuarioID        *uint   `gorm:"index"`
+	PedidoID         *uint64 `gorm:"index"`
 
-	Codigo string `gorm:"not null;uniqueIndex"`
-	Status string `gorm:"not null"`
+	Codigo    string `gorm:"not null;uniqueIndex"`
+	Status    string `gorm:"not null"`
+	VendidoEm *time.Time
 
 	EventoIngresso EventoIngresso `gorm:"foreignKey:EventoIngressoID"`
 }

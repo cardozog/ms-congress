@@ -20,7 +20,7 @@ func NewLoginRepository(db *gorm.DB) LoginRepositoryInterface {
 
 func (r *LoginRepository) BuscarPorEmail(email string) (*models.Usuario, error) {
 	var usuario models.Usuario
-	if err := r.db.Where("email = ?", email).First(&usuario).Error; err != nil {
+	if err := r.db.Preload("Papeis.Role").Where("email = ?", email).First(&usuario).Error; err != nil {
 		return nil, err
 	}
 	return &usuario, nil

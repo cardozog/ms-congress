@@ -57,6 +57,35 @@ type EventoPorOrganizadorDTO struct {
 	EventoLogo    string    `json:"eventoLogo"`
 }
 
+type EventoDisponivelDTO struct {
+	ID            uint64               `json:"id"`
+	Nome          string               `json:"nome"`
+	Descricao     string               `json:"descricao"`
+	DataInicio    time.Time            `json:"dataInicio"`
+	DataFim       time.Time            `json:"dataFim"`
+	EventoLogo    string               `json:"eventoLogo"`
+	OrganizadorID uint64               `json:"organizadorID"`
+	Organizador   EventoOrganizadorDTO `json:"organizador"`
+}
+
+type EventosPorOrganizadorDTO struct {
+	Organizador EventoOrganizadorDTO  `json:"organizador"`
+	Eventos     []EventoDisponivelDTO `json:"eventos"`
+}
+
+func NovoEventoDisponivelDTO(evento Evento) EventoDisponivelDTO {
+	return EventoDisponivelDTO{
+		ID: evento.ID, Nome: evento.Nome, Descricao: evento.Descricao,
+		DataInicio: evento.DataInicio, DataFim: evento.DataFim,
+		EventoLogo: evento.EventoLogo, OrganizadorID: evento.OrganizadorID,
+		Organizador: EventoOrganizadorDTO{
+			ID: evento.Organizador.ID, UsuarioID: evento.Organizador.UsuarioID,
+			RazaoSocial: evento.Organizador.RazaoSocial, NomeFantasia: evento.Organizador.NomeFantasia,
+			CNPJ: evento.Organizador.CNPJ,
+		},
+	}
+}
+
 func NovoEventoPorOrganizadorDTO(evento Evento) EventoPorOrganizadorDTO {
 	return EventoPorOrganizadorDTO{
 		ID:            evento.ID,
@@ -74,7 +103,16 @@ func NovoEventoPorOrganizadorDTO(evento Evento) EventoPorOrganizadorDTO {
 func NovoEventoDetalhadoDTO(evento Evento) EventoDetalhadoDTO {
 	ingressos := make([]EventoIngressoDTO, 0, len(evento.Ingressos))
 	for _, ingresso := range evento.Ingressos {
-		disponivel := ingresso.Quantidade - len(ingresso.Ingressos)
+		disponiveis := 0
+		for _, ticket := range ingresso.Ingressos {
+			if ticket.Status == "DISPONIVEL" {
+				disponiveis++
+			}
+		}
+		disponivel := ingresso.Quantidade
+		if len(ingresso.Ingressos) > 0 {
+			disponivel = disponiveis
+		}
 		if disponivel < 0 {
 			disponivel = 0
 		}

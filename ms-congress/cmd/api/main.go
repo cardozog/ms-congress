@@ -7,11 +7,16 @@ import (
 	"ms-congress/internal/config/db"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
 
 func main() {
+	if strings.TrimSpace(os.Getenv("PAYMENT_DATA_ENCRYPTION_KEY")) == "" {
+		log.Fatal("PAYMENT_DATA_ENCRYPTION_KEY must be configured")
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
