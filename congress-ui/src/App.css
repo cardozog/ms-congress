@@ -379,6 +379,7 @@
     .my-event-cover { flex-basis:92px; height:126px; }
     .my-event-card h2 { font-size:21px; }
   }
+
   .discovery-heading { align-items:start; }
   .discovery-heading h2 { font-size:38px; }
   .discovery-card { flex-basis:78vw; }
@@ -390,3 +391,57 @@
   .public-tickets-heading { align-items:start; flex-direction:column; }
   .public-ticket { align-items:start; }
 }
+
+
+/* Current identity and public congressista navigation. */
+/* Current identity and public congressista navigation. */
+  :root {
+    --ink: #101728;
+    --muted: #68728a;
+    --paper: #f8fafc;
+    --surface: #ffffff;
+    --line: #e4e8f0;
+    --mint: #ddd6fe;
+    --mint-dark: #6e45ff;
+    --coral: #f28772;
+    --yellow: #a78bfa;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  body { background: var(--paper); color: var(--ink); }
+  h1, h2, h3 { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  .sidebar { background: #101728; }
+  .brand-mark { border-radius: 10px; transform: none; background: linear-gradient(135deg, #6e45ff, #9b7cff); color: #fff; }
+  .nav-item { border-left: 0; border-radius: 10px; color: #9ca8c5; }
+  .nav-item:hover, .nav-item.is-active { border-left: 0; background: #ffffff12; color: #fff; }
+  .topbar { background: #fff; border-bottom-color: var(--line); }
+  .primary-button { border-radius: 9px; background: linear-gradient(135deg, #6e45ff, #5630d8); box-shadow: 0 8px 18px #7045f52b; }
+  .secondary-button { border-radius: 9px; background: #eef0f6; color: var(--ink); }
+  .form-panel, .event-form, .profile-card { border-radius: 18px; box-shadow: 0 20px 60px #25345b12; }
+  input, textarea { border-color: #dce2ee; border-radius: 10px; background: #fbfcff; }
+  input:focus, textarea:focus { border-color: #6e45ff; box-shadow: 0 0 0 3px #7045f51a; }
+  .event-card, .my-event-card, .credential-card, .checkout-summary { border-radius: 16px; box-shadow: 0 12px 32px #25345b0b; }
+  .event-card::before { background: linear-gradient(#6e45ff, #18d6cf); }
+  .discovery-image, .public-event-cover, .my-event-cover { background: linear-gradient(135deg, #dcd4ff, #8b67ff); }
+  .qr-modal-backdrop, .flow-modal-backdrop { background: #1017288c; backdrop-filter: blur(4px); }
+  .qr-modal, .flow-modal { border-radius: 20px; box-shadow: 0 24px 80px #10172850; }
+
+  .public-nav { min-height: 76px; display: flex; align-items: center; gap: 42px; padding: 0 clamp(24px, 6vw, 88px); background: #fff; border-bottom: 1px solid var(--line); }
+  .public-brand { display: flex; align-items: center; gap: 10px; color: var(--ink); font-size: 16px; }
+  .public-brand .brand-mark { width: 34px; height: 34px; font-size: 11px; }
+  .public-nav nav { display: flex; align-items: center; gap: 26px; flex: 1; }
+  .public-nav nav a { padding: 28px 0 25px; color: #68728a; font-size: 13px; font-weight: 700; border-bottom: 3px solid transparent; }
+  .public-nav nav a:hover, .public-nav nav a.is-current { color: #6e45ff; border-bottom-color: #6e45ff; }
+  .public-actions { display: flex; align-items: center; gap: 18px; }
+  .public-user { max-width: 220px; overflow: hidden; color: #68728a; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+  .public-nav .icon-button { display: inline-flex; align-items: center; justify-content: center; transform: none; }
+  .public-nav .cart-link { display: inline-flex; align-items: center; gap: 7px; }
+
+  @media (max-width: 800px) {
+    .public-nav { min-height: 70px; flex-wrap: wrap; gap: 12px 20px; padding: 14px 20px; }
+    .public-nav nav { order: 3; flex-basis: 100%; gap: 20px; }
+    .public-nav nav a { padding: 8px 0; }
+    .public-user { display: none; }
+  }

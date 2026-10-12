@@ -71,8 +71,8 @@ func (r *PedidoRepository) ConfirmarPagamento(externalID, status string) error {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&pedido, payment.PedidoID).Error; err != nil {
 			return err
 		}
-		if payment.Status == pedidomodels.StatusPagamentoAprovado || pedido.Status == pedidomodels.StatusPedidoPago {
-			return nil
+		if err := tx.Preload("Itens").First(&pedido, payment.PedidoID).Error; err != nil {
+			return err
 		}
 		now := time.Now()
 		if status == pedidomodels.StatusPagamentoAprovado {
@@ -81,14 +81,34 @@ func (r *PedidoRepository) ConfirmarPagamento(externalID, status string) error {
 				Where("pedido_id = ? AND status = ?", pedido.ID, "RESERVADO").Find(&reserved).Error; err != nil {
 				return err
 			}
-			if len(reserved) == 0 {
-				return errors.New("nenhum ingresso reservado para o pedido")
+			// A callback aprovado pode ser repetido depois de uma emissão
+			// parcial ou de uma versão anterior da aplicação. Só encerramos
+			// quando não há reservas pendentes para reconciliar.
+			if len(reserved) == 0 && payment.Status == pedidomodels.StatusPagamentoAprovado && pedido.Status == pedidomodels.StatusPedidoPago {
+				var issued int64
+				if err := tx.Model(&eventomodels.Ingresso{}).
+					Where("pedido_id = ? AND status = ?", pedido.ID, "VENDIDO").
+					Count(&issued).Error; err != nil {
+					return err
+				}
+				expected := 0
+				for _, item := range pedido.Itens {
+					expected += item.Quantidade
+				}
+				if int(issued) == expected && expected > 0 {
+					return nil
+				}
+				return emitMissingPaidOrderTickets(tx, pedido, expected-int(issued), now)
+			}
+			if err := ensureOrderTicketCount(tx, pedido, len(reserved)); err != nil {
+				return err
 			}
 			for _, ingresso := range reserved {
 				credentialCode, err := newCredentialCode()
 				if err != nil {
 					return err
 				}
+
 				if err := tx.Model(&eventomodels.Ingresso{}).Where("id = ? AND status = ?", ingresso.ID, "RESERVADO").
 					Updates(map[string]interface{}{"status": "VENDIDO", "usuario_id": pedido.UsuarioID, "vendido_em": now, "codigo": credentialCode}).Error; err != nil {
 					return err
@@ -120,6 +140,55 @@ func newCredentialCode() (string, error) {
 		return "", fmt.Errorf("gerar credencial digital: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
+}
+
+func emitMissingPaidOrderTickets(tx *gorm.DB, pedido pedidomodels.Pedido, missing int, now time.Time) error {
+	if missing <= 0 {
+		return errors.New("pedido pago sem ingressos emitidos")
+	}
+	for _, item := range pedido.Itens {
+		var issued int64
+		if err := tx.Model(&eventomodels.Ingresso{}).
+			Where("pedido_id = ? AND evento_ingresso_id = ? AND status IN ?", pedido.ID, item.EventoIngressoID, []string{"VENDIDO", "RESERVADO"}).
+			Count(&issued).Error; err != nil {
+			return err
+		}
+		quantity := item.Quantidade - int(issued)
+		if quantity <= 0 {
+			continue
+		}
+		var available []eventomodels.Ingresso
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("evento_ingresso_id = ? AND status = ?", item.EventoIngressoID, "DISPONIVEL").
+			Limit(quantity).Find(&available).Error; err != nil {
+			return err
+		}
+		if len(available) != quantity {
+			return fmt.Errorf("estoque insuficiente para reconciliar o pedido %d", pedido.ID)
+		}
+		for _, ingresso := range available {
+			code, err := newCredentialCode()
+			if err != nil {
+				return err
+			}
+			if err := tx.Model(&eventomodels.Ingresso{}).Where("id = ? AND status = ?", ingresso.ID, "DISPONIVEL").
+				Updates(map[string]interface{}{"status": "VENDIDO", "usuario_id": pedido.UsuarioID, "pedido_id": pedido.ID, "vendido_em": now, "codigo": code}).Error; err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func ensureOrderTicketCount(tx *gorm.DB, pedido pedidomodels.Pedido, reservedCount int) error {
+	expected := 0
+	for _, item := range pedido.Itens {
+		expected += item.Quantidade
+	}
+	if expected == 0 || reservedCount != expected {
+		return fmt.Errorf("quantidade de ingressos reservados inconsistente: esperado %d, encontrado %d", expected, reservedCount)
+	}
+	return nil
 }
 
 func (r *PedidoRepository) Criar(usuarioID uint, key string, entries []carrinho.CartEntry) (*pedidomodels.Pedido, error) {
