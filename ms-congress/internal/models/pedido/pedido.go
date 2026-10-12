@@ -60,6 +60,11 @@ type Pagamento struct {
 	Provedor          string
 	ReferenciaExterna string `gorm:"uniqueIndex"`
 	IdempotencyKey    string `gorm:"uniqueIndex"`
+	CPFEncriptado     string
+	CartaoFinal       string
+	BandeiraCartao    string
+	VencimentoMes     int
+	VencimentoAno     int
 	AprovadoEm        *time.Time
 	ReembolsadoEm     *time.Time
 	CriadoEm          time.Time `gorm:"not null;autoCreateTime"`

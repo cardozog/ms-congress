@@ -15,6 +15,7 @@ services:
       CART_COOKIE_SECRET: change-this-cart-secret-in-development
       APP_ENV: development
       PAYMENT_WEBHOOK_SECRET: change-this-payment-webhook-secret-in-development
+      PAYMENT_DATA_ENCRYPTION_KEY: change-this-payment-data-key-in-development
     ports:
       - "8080:8080"
     restart: unless-stopped

@@ -27,6 +27,13 @@ type webhookRequest struct {
 	Status     string `json:"status" binding:"required"`
 }
 
+type cardPaymentRequest struct {
+	Number       string `json:"numeroCartao" binding:"required"`
+	CPF          string `json:"cpf" binding:"required"`
+	Expiry       string `json:"vencimento" binding:"required"`
+	SecurityCode string `json:"codigoSeguranca" binding:"required"`
+}
+
 func NewPagamentoHandler(service *services.PagamentoService, secret string) *PagamentoHandler {
 	return &PagamentoHandler{service: service, secret: secret}
 }
@@ -37,7 +44,14 @@ func (h *PagamentoHandler) Iniciar(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"erro": "identificador inválido"})
 		return
 	}
-	pedido, apiErr := h.service.Iniciar(c.GetUint("usuarioID"), id, c.GetHeader("Idempotency-Key"))
+	var request cardPaymentRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"erro": "dados do cartão são obrigatórios"})
+		return
+	}
+	pedido, apiErr := h.service.Iniciar(c.GetUint("usuarioID"), id, c.GetHeader("Idempotency-Key"), services.CardData{
+		Number: request.Number, CPF: request.CPF, Expiry: request.Expiry, SecurityCode: request.SecurityCode,
+	})
 	if apiErr != nil {
 		erros.HandleErrorWithStatus(c, apiErr)
 		return

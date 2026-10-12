@@ -16,10 +16,22 @@ export function CongressistaEventsPage() {
     if (!session) return
     const currentSession = session
     async function load() {
-      setLoading(true); setFeedback('')
-      try { const [available, cart] = await Promise.all([getAvailableEvents(currentSession), getCart(currentSession)]); setGroups(available); setCartCount(cart.totalItens) }
-      catch (error) { setFeedback(errorMessage(error, 'Não foi possível carregar os eventos disponíveis.')) }
-      finally { setLoading(false) }
+      setLoading(true)
+      setFeedback('')
+      try {
+        const available = await getAvailableEvents(currentSession)
+        setGroups(available)
+      } catch (error) {
+        setFeedback(errorMessage(error, 'Não foi possível carregar os eventos disponíveis.'))
+      } finally {
+        setLoading(false)
+      }
+      try {
+        const cart = await getCart(currentSession)
+        setCartCount(cart.totalItens)
+      } catch {
+        setCartCount(0)
+      }
     }
     void load()
   }, [session])

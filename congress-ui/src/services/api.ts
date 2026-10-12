@@ -63,8 +63,8 @@ export function clearCart(session: Session) { return request<void>('/carrinho', 
 export function createOrder(session: Session, idempotencyKey: string) {
   return request<Order>('/pedidos', { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey } }, session)
 }
-export function startPayment(session: Session, orderId: number, idempotencyKey: string) {
-  return request<Order>(`/pedidos/${orderId}/pagamento`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey } }, session)
+export function startPayment(session: Session, orderId: number, idempotencyKey: string, card?: { numeroCartao: string; cpf: string; vencimento: string; codigoSeguranca: string }) {
+  return request<Order>(`/pedidos/${orderId}/pagamento`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey }, body: card ? JSON.stringify(card) : undefined }, session)
 }
 export function getOrder(session: Session, orderId: number) { return request<Order>(`/pedidos/${orderId}`, {}, session) }
 export function simulatePayment(session: Session, orderId: number, approved: boolean) {

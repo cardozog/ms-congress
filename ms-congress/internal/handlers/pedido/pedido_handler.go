@@ -33,6 +33,11 @@ func NewPedidoHandler(service *pedidoServices.PedidoService, secret string) *Ped
 
 func (h *PedidoHandler) Criar(c *gin.Context) {
 	key := c.GetHeader("Idempotency-Key")
+	if pedido, err := h.service.BuscarPorChave(c.GetUint("usuarioID"), key); err == nil {
+		h.clearCookie(c)
+		c.JSON(http.StatusOK, resposta(pedido))
+		return
+	}
 	cart, ok := h.readCart(c)
 	if !ok || cart.UsuarioID != c.GetUint("usuarioID") {
 		c.JSON(http.StatusBadRequest, gin.H{"erro": "carrinho inválido ou expirado"})

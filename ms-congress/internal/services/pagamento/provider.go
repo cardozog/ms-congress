@@ -1,11 +1,12 @@
 package services
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
-	"time"
 )
 
 type ProviderPayment struct {
@@ -22,7 +23,11 @@ func (SimulatedProvider) CreatePayment(orderID uint64, _ float64, _ string) (Pro
 	if !simulationEnabled() {
 		return ProviderPayment{}, errors.New("provedor simulado desabilitado fora de desenvolvimento")
 	}
-	return ProviderPayment{ExternalID: fmt.Sprintf("sim-%d-%d", orderID, time.Now().UnixNano())}, nil
+	random := make([]byte, 24)
+	if _, err := rand.Read(random); err != nil {
+		return ProviderPayment{}, fmt.Errorf("gerar referência do pagamento: %w", err)
+	}
+	return ProviderPayment{ExternalID: fmt.Sprintf("sim-%d-%s", orderID, base64.RawURLEncoding.EncodeToString(random))}, nil
 }
 
 func simulationEnabled() bool {

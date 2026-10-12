@@ -8,6 +8,7 @@ import (
 	eventos "ms-congress/internal/models/evento"
 	pedidos "ms-congress/internal/models/pedido"
 	models "ms-congress/internal/models/usuario"
+	"strconv"
 
 	"os"
 	"time"
@@ -181,10 +182,10 @@ func seedData(database *gorm.DB) error {
 		if err != nil {
 			return err
 		}
-		if err := seedIngresso(tx, loteInteira.ID, "MS-CONGRESS-001"); err != nil {
+		if err := seedIngressos(tx, loteInteira.ID, "MS-CONGRESS-001", loteInteira.Quantidade); err != nil {
 			return err
 		}
-		return seedIngresso(tx, loteMeia.ID, "MS-CONGRESS-002")
+		return seedIngressos(tx, loteMeia.ID, "MS-CONGRESS-002", loteMeia.Quantidade)
 	})
 }
 
@@ -272,19 +273,46 @@ func seedTipoIngresso(database *gorm.DB, nome string) (eventos.TipoIngresso, err
 func seedEventoIngresso(database *gorm.DB, eventoID, tipoIngressoID uint64, preco float64, quantidade int) (eventos.EventoIngresso, error) {
 	lote := eventos.EventoIngresso{}
 	err := database.Where("evento_id = ? AND tipo_ingresso_id = ?", eventoID, tipoIngressoID).First(&lote).Error
+	inicio := time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
+	fim := time.Date(2026, time.November, 9, 23, 59, 59, 0, time.UTC)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		inicio := time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
-		lote = eventos.EventoIngresso{EventoID: eventoID, TipoIngressoID: tipoIngressoID, Preco: preco, Quantidade: quantidade, DataInicioVenda: inicio, DataFimVenda: time.Date(2026, time.November, 9, 23, 59, 59, 0, time.UTC)}
+		lote = eventos.EventoIngresso{EventoID: eventoID, TipoIngressoID: tipoIngressoID, Preco: preco, Quantidade: quantidade, DataInicioVenda: inicio, DataFimVenda: fim}
 		err = database.Create(&lote).Error
+	} else if err == nil {
+		err = database.Model(&eventos.EventoIngresso{}).Where("id = ?", lote.ID).
+			Updates(map[string]interface{}{
+				"preco": preco, "quantidade": quantidade,
+				"data_inicio_venda": inicio, "data_fim_venda": fim,
+			}).Error
+		lote.Preco = preco
+		lote.Quantidade = quantidade
+		lote.DataInicioVenda = inicio
+		lote.DataFimVenda = fim
 	}
 	return lote, err
 }
 
-func seedIngresso(database *gorm.DB, eventoIngressoID uint64, codigo string) error {
-	ingresso := eventos.Ingresso{}
-	err := database.Where("codigo = ?", codigo).First(&ingresso).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return database.Create(&eventos.Ingresso{EventoIngressoID: eventoIngressoID, Codigo: codigo, Status: "DISPONIVEL"}).Error
+func seedIngressos(database *gorm.DB, eventoIngressoID uint64, prefixo string, quantidade int) error {
+	for numero := 1; numero <= quantidade; numero++ {
+		codigo := prefixo
+		if numero > 1 {
+			codigo += "-" + strconv.Itoa(numero)
+		}
+		ingresso := eventos.Ingresso{}
+		err := database.Where("codigo = ?", codigo).First(&ingresso).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			if err := database.Create(&eventos.Ingresso{
+				EventoIngressoID: eventoIngressoID,
+				Codigo:           codigo,
+				Status:           "DISPONIVEL",
+			}).Error; err != nil {
+				return err
+			}
+			continue
+		}
+		if err != nil {
+			return err
+		}
 	}
-	return err
+	return nil
 }
