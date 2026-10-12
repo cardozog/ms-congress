@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
@@ -83,11 +85,16 @@ func (r *PedidoRepository) ConfirmarPagamento(externalID, status string) error {
 				return errors.New("nenhum ingresso reservado para o pedido")
 			}
 			for _, ingresso := range reserved {
+				credentialCode, err := newCredentialCode()
+				if err != nil {
+					return err
+				}
 				if err := tx.Model(&eventomodels.Ingresso{}).Where("id = ? AND status = ?", ingresso.ID, "RESERVADO").
-					Updates(map[string]interface{}{"status": "VENDIDO", "usuario_id": pedido.UsuarioID, "vendido_em": now}).Error; err != nil {
+					Updates(map[string]interface{}{"status": "VENDIDO", "usuario_id": pedido.UsuarioID, "vendido_em": now, "codigo": credentialCode}).Error; err != nil {
 					return err
 				}
 			}
+
 			if err := tx.Model(&pedidomodels.Pedido{}).Where("id = ?", pedido.ID).
 				Updates(map[string]interface{}{"status": pedidomodels.StatusPedidoPago, "pago_em": now}).Error; err != nil {
 				return err
@@ -105,6 +112,14 @@ func (r *PedidoRepository) ConfirmarPagamento(externalID, status string) error {
 		}
 		return tx.Model(&pedidomodels.Pagamento{}).Where("id = ?", payment.ID).Update("status", status).Error
 	})
+}
+
+func newCredentialCode() (string, error) {
+	randomBytes := make([]byte, 32)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", fmt.Errorf("gerar credencial digital: %w", err)
+	}
+	return base64.RawURLEncoding.EncodeToString(randomBytes), nil
 }
 
 func (r *PedidoRepository) Criar(usuarioID uint, key string, entries []carrinho.CartEntry) (*pedidomodels.Pedido, error) {

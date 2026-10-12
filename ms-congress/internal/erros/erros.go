@@ -12,8 +12,11 @@ type ApiError struct {
 }
 
 func HandleErrorWithStatus(c *gin.Context, apiErr *ApiError) {
-	c.AbortWithError(apiErr.StatusCode, apiErr.Error)
-
+	message := "erro interno"
+	if apiErr != nil && apiErr.Error != nil {
+		message = apiErr.Error.Error()
+	}
+	c.AbortWithStatusJSON(apiErr.StatusCode, gin.H{"erro": message})
 }
 
 var ErroEmailJaCadastrado = errors.New("email já cadastrado")

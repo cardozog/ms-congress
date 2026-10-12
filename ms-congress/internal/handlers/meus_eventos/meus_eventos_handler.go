@@ -24,6 +24,7 @@ func (h *Handler) Listar(c *gin.Context) {
 	type ticket struct {
 		ID         uint64 `json:"id"`
 		Codigo     string `json:"codigo"`
+		QRCode     string `json:"qrCode"`
 		Status     string `json:"status"`
 		EventoID   uint64 `json:"eventoId"`
 		Evento     string `json:"evento"`
@@ -53,7 +54,7 @@ func (h *Handler) Listar(c *gin.Context) {
 			order = append(order, evento.ID)
 		}
 		group.Quantidade++
-		group.Ingresso = append(group.Ingresso, ticket{ID: ingresso.ID, Codigo: ingresso.Codigo, Status: ingresso.Status, EventoID: evento.ID, Evento: evento.Nome, Ingresso: tipo.Nome, EventoLogo: evento.EventoLogo})
+		group.Ingresso = append(group.Ingresso, ticket{ID: ingresso.ID, Codigo: ingresso.Codigo, QRCode: qrPayload(ingresso.Codigo), Status: ingresso.Status, EventoID: evento.ID, Evento: evento.Nome, Ingresso: tipo.Nome, EventoLogo: evento.EventoLogo})
 	}
 	response := make([]*eventGroup, 0, len(order))
 	for _, id := range order {
@@ -80,8 +81,13 @@ func (h *Handler) Detalhar(c *gin.Context) {
 	evento := ingressos[0].EventoIngresso.Evento
 	tickets := make([]gin.H, 0, len(ingressos))
 	for _, ingresso := range ingressos {
-		tickets = append(tickets, gin.H{"id": ingresso.ID, "codigo": ingresso.Codigo, "status": ingresso.Status, "eventoId": evento.ID, "evento": evento.Nome, "ingresso": ingresso.EventoIngresso.TipoIngresso.Nome, "eventoLogo": evento.EventoLogo})
+		tickets = append(tickets, gin.H{"id": ingresso.ID, "codigo": ingresso.Codigo, "qrCode": qrPayload(ingresso.Codigo), "status": ingresso.Status, "eventoId": evento.ID, "evento": evento.Nome, "ingresso": ingresso.EventoIngresso.TipoIngresso.Nome, "eventoLogo": evento.EventoLogo})
 	}
+
 	response := gin.H{"id": evento.ID, "nome": evento.Nome, "dataInicio": evento.DataInicio, "dataFim": evento.DataFim, "classificacao": repositories.ClassificarEvento(evento, time.Now()), "eventoLogo": evento.EventoLogo, "organizador": evento.Organizador, "quantidade": len(tickets), "ingressos": tickets}
 	c.JSON(http.StatusOK, response)
+}
+
+func qrPayload(code string) string {
+	return "ms-congress:credential:" + code
 }

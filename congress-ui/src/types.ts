@@ -97,6 +97,7 @@ export interface Order {
 export interface AcquiredTicket {
   id: number
   codigo: string
+  qrCode?: string
   status: string
   eventoId: number
   evento: string
