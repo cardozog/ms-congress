@@ -4,6 +4,7 @@ import (
 	"context"
 	handlers "ms-congress/internal/handlers/cadastro"
 	cadastro "ms-congress/internal/repositories/cadastro"
+	carrinhoRouter "ms-congress/internal/routers/carrinho"
 	eventoRouter "ms-congress/internal/routers/evento"
 	loginRouter "ms-congress/internal/routers/login"
 	usuarioRouter "ms-congress/internal/routers/usuario"
@@ -23,6 +24,7 @@ func InitApp(ctx context.Context, db *gorm.DB) (*gin.Engine, error) {
 	v1Group := router.Group("/v1/api")
 	moduloCadastro(ctx, db, v1Group)
 	eventoRouter.SetupEventoRoutes(v1Group, db)
+	carrinhoRouter.SetupCarrinhoRoutes(v1Group, db)
 	loginRouter.SetupLoginRoutes(v1Group, db)
 	usuarioRouter.SetupUsuarioRoutes(v1Group, db)
 	return router, nil
@@ -36,6 +38,7 @@ func corsMiddleware() gin.HandlerFunc {
 		} else if origin == "" || isLocalOrigin(origin) {
 			if origin != "" {
 				c.Header("Access-Control-Allow-Origin", origin)
+				c.Header("Access-Control-Allow-Credentials", "true")
 			}
 		}
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
@@ -61,5 +64,6 @@ func moduloCadastro(ctx context.Context, db *gorm.DB, group *gin.RouterGroup) er
 	handler := handlers.NewCadastroHandler(service)
 
 	group.GET("/cadastro/email-existe", handler.EmailExiste)
+	group.POST("/cadastro/congressista", handler.CadastrarCongressista)
 	return nil
 }

@@ -12,6 +12,7 @@ services:
       ADMIN_EMAIL: admin@local.com
       ADMIN_PASSWORD: admin123
       JWT_SECRET: change-this-secret-in-development
+      CART_COOKIE_SECRET: change-this-cart-secret-in-development
     ports:
       - "8080:8080"
     restart: unless-stopped

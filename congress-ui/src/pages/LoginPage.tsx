@@ -6,8 +6,8 @@ import type { Session } from '../types'
 export function LoginPage() {
   const { session, signIn } = useSession()
   const navigate = useNavigate()
-  if (session) return <Navigate to="/eventos" replace />
+  if (session) return <Navigate to={session.papeis?.includes('PARTICIPANTE') ? '/congressista/eventos' : '/eventos'} replace />
   async function handleLogin(next: Session) { signIn(next); navigate('/eventos', { replace: true }) }
   return <><header className="topbar public-topbar"><Brand /><div /></header><LoginScreen onLogin={handleLogin} /></>
 }
-function Brand() { return <a className="brand" href="/login"><span className="brand-mark">MS</span><span><strong>MS Congress</strong><small>painel do organizador</small></span></a> }
+function Brand() { return <a className="brand" href="/login"><span className="brand-mark">MS</span><span><strong>MS Congress</strong><small>painel administrativo</small></span></a> }

@@ -13,6 +13,7 @@ type CadastroRepository struct {
 type CadastroRepositoryInterface interface {
 	EmailExiste(email string) (bool, error)
 	CadastrarPessoaJuridica(pj *models.PessoaJuridica) error
+	CadastrarCongressista(usuario *models.Usuario, pessoa *models.PessoaFisica) error
 }
 
 func NewCadastroRepository(db *gorm.DB) CadastroRepositoryInterface {
@@ -37,4 +38,26 @@ func (r *CadastroRepository) CadastrarPessoaJuridica(pj *models.PessoaJuridica) 
 		return err
 	}
 	return nil
+}
+
+func (r *CadastroRepository) CadastrarCongressista(usuario *models.Usuario, pessoa *models.PessoaFisica) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var tipo models.TipoPessoa
+		if err := tx.Where("tipo = ?", "FISICA").First(&tipo).Error; err != nil {
+			return err
+		}
+		usuario.TipoPessoaID = tipo.ID
+		if err := tx.Create(usuario).Error; err != nil {
+			return err
+		}
+		pessoa.UsuarioID = usuario.ID
+		if err := tx.Create(pessoa).Error; err != nil {
+			return err
+		}
+		var role models.Role
+		if err := tx.Where("nome = ?", "PARTICIPANTE").First(&role).Error; err != nil {
+			return err
+		}
+		return tx.Create(&models.UsuarioRole{UsuarioID: usuario.ID, RoleID: role.ID}).Error
+	})
 }

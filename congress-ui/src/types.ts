@@ -4,6 +4,7 @@ export interface Session {
   email: string
   id: number
   tipoPessoaID: number
+  papeis: string[]
 }
 
 export interface CompanyProfile {
@@ -31,7 +32,25 @@ export interface EventSummary {
   eventoLogo?: string
 }
 
+export interface Organizer {
+  id: number
+  usuarioID: number
+  razaoSocial: string
+  nomeFantasia: string
+  cnpj: string
+}
+
+export interface AvailableEvent extends EventSummary {
+  organizador: Organizer
+}
+
+export interface AvailableEventGroup {
+  organizador: Organizer
+  eventos: AvailableEvent[]
+}
+
 export interface EventDetails extends EventSummary {
+  organizador: Organizer
   logradouro: string
   cidade: string
   estado: string
@@ -46,7 +65,24 @@ export interface TicketDetails {
   preco: number
   quantidade: number
   disponivel: number
+  dataInicioVenda: string
+  dataFimVenda: string
   tipoIngresso: { id: number; nome: string }
+}
+
+export interface CartItem {
+  id: number
+  evento: { id: number; nome: string; eventoLogo?: string }
+  ingresso: { id: number; nome: string }
+  quantidade: number
+  precoUnitario: number
+  subtotal: number
+}
+
+export interface Cart {
+  itens: CartItem[]
+  totalItens: number
+  valorTotal: number
 }
 
 export interface TicketPayload {

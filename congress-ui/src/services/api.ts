@@ -1,8 +1,7 @@
-import type { EventDetails, EventPayload, EventSummary, Profile, Session, TicketType } from '../types'
+import type { AvailableEventGroup, Cart, EventDetails, EventPayload, EventSummary, Profile, Session, TicketType } from '../types'
 
 const API_BASE_URL = 'http://localhost:8080/v1/api'
 const SESSION_KEY = 'ms-congress-session'
-const COMPANY_TYPE = 2
 
 export class ApiError extends Error {}
 
@@ -11,8 +10,9 @@ async function request<T>(path: string, options: RequestInit = {}, session?: Ses
   if (options.body) headers.set('Content-Type', 'application/json')
   if (session?.token) headers.set('Authorization', `${session.tokenType ?? 'Bearer'} ${session.token}`)
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
+  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, credentials: 'include' })
   if (!response.ok) {
+    if (response.status === 401) clearSession()
     const raw = await response.text()
     let data: unknown
     try { data = raw ? JSON.parse(raw) : null } catch { throw new ApiError(raw || `A API respondeu com status ${response.status}.`) }
@@ -33,17 +33,30 @@ export function saveSession(session: Session) { localStorage.setItem(SESSION_KEY
 export function clearSession() { localStorage.removeItem(SESSION_KEY) }
 
 export async function login(email: string, senha: string): Promise<Session> {
-  const session = await request<Session>('/login', { method: 'POST', body: JSON.stringify({ email, senha }) })
-  if (Number(session.tipoPessoaID) !== COMPANY_TYPE) throw new ApiError('Este painel está disponível apenas para contas de pessoa jurídica.')
-  return session
+  return request<Session>('/login', { method: 'POST', body: JSON.stringify({ email, senha }) })
+}
+
+export function loginCongressista(email: string, senha: string) {
+  return request<Session>('/login/congressista', { method: 'POST', body: JSON.stringify({ email, senha }) })
+}
+
+export function registerCongressista(payload: { email: string; senha: string; nome: string; cpf: string; dataNascimento: string }) {
+  return request<{ mensagem: string }>('/cadastro/congressista', { method: 'POST', body: JSON.stringify(payload) })
 }
 
 export function getProfile(session: Session) { return request<Profile>(`/usuarios/${session.id}`, {}, session) }
 export function getEvents(session: Session, organizerId: number) { return request<EventSummary[]>(`/eventos/organizador/${organizerId}`, {}, session) }
 export function getTicketTypes(session: Session) { return request<TicketType[]>('/eventos/tipos-ingresso', {}, session) }
 export function getEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}`, {}, session) }
+export function getAvailableEvents(session: Session) { return request<AvailableEventGroup[]>('/eventos/disponiveis', {}, session) }
+export function getAvailableEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/disponiveis/${id}`, {}, session) }
 export function createEvent(session: Session, payload: EventPayload) { return request<EventDetails>('/eventos', { method: 'POST', body: JSON.stringify(payload) }, session) }
 export function updateEvent(session: Session, id: number, payload: EventPayload) { return request<EventDetails>(`/eventos/${id}`, { method: 'PUT', body: JSON.stringify(payload) }, session) }
 export function publishEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}/publicar`, { method: 'PATCH' }, session) }
 export function closeEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}/encerrar`, { method: 'PATCH' }, session) }
 export function deleteEvent(session: Session, id: number) { return request<void>(`/eventos/${id}`, { method: 'DELETE' }, session) }
+export function getCart(session: Session) { return request<Cart>('/carrinho', {}, session) }
+export function addCartItem(session: Session, eventoIngressoId: number, quantidade: number) { return request<Cart>('/carrinho/itens', { method: 'POST', body: JSON.stringify({ evento_ingresso_id: eventoIngressoId, quantidade }) }, session) }
+export function updateCartItem(session: Session, itemId: number, quantidade: number) { return request<Cart>(`/carrinho/itens/${itemId}`, { method: 'PATCH', body: JSON.stringify({ quantidade }) }, session) }
+export function removeCartItem(session: Session, itemId: number) { return request<void>(`/carrinho/itens/${itemId}`, { method: 'DELETE' }, session) }
+export function clearCart(session: Session) { return request<void>('/carrinho', { method: 'DELETE' }, session) }

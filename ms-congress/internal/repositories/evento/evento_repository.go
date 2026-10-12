@@ -21,6 +21,18 @@ type EventoRepositoryInterface interface {
 	Encerrar(id uint64, dataFim time.Time) error
 	Delete(evento *models.Evento) error
 	ListarTiposIngresso() ([]models.TipoIngresso, error)
+	ListarEventosDisponiveis(now time.Time) ([]models.Evento, error)
+}
+
+func (r *EventoRepository) ListarEventosDisponiveis(now time.Time) ([]models.Evento, error) {
+	var eventos []models.Evento
+	err := r.db.
+		Preload("Organizador").
+		Where("publicado = ?", true).
+		Where("data_fim >= ?", now).
+		Order("organizador_id ASC, data_inicio ASC, id ASC").
+		Find(&eventos).Error
+	return eventos, err
 }
 
 func NewEventoRepository(db *gorm.DB) EventoRepositoryInterface {

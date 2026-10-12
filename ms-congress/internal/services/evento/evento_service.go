@@ -23,6 +23,15 @@ type EventoServiceInterface interface {
 	Encerrar(id uint64) *erros.ApiError
 	Excluir(id uint64) *erros.ApiError
 	ListarTiposIngresso() ([]models.TipoIngresso, *erros.ApiError)
+	ListarEventosDisponiveis(now time.Time) ([]models.Evento, *erros.ApiError)
+}
+
+func (s *EventoService) ListarEventosDisponiveis(now time.Time) ([]models.Evento, *erros.ApiError) {
+	eventos, err := s.repository.ListarEventosDisponiveis(now)
+	if err != nil {
+		return nil, internalError(err)
+	}
+	return eventos, nil
 }
 
 func (s *EventoService) ListarTiposIngresso() ([]models.TipoIngresso, *erros.ApiError) {

@@ -33,3 +33,7 @@ var ErroConfiguracaoToken = errors.New("segredo do token não configurado")
 var ErroTokenInvalido = errors.New("token inválido")
 
 var ErroUsuarioNaoAutorizado = errors.New("usuário não autorizado")
+
+var ErroDadosCadastroInvalidos = errors.New("dados de cadastro inválidos")
+
+var ErroDadosJaCadastrados = errors.New("email ou cpf já cadastrado")

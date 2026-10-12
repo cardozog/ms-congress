@@ -17,4 +17,5 @@ func SetupLoginRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	handler := handlers.NewLoginHandler(service)
 
 	router.POST("/login", handler.Login)
+	router.POST("/login/congressista", handler.LoginCongressista)
 }

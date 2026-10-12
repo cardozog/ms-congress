@@ -98,6 +98,47 @@ func (h *EventoHandler) BuscarPorOrganizador(c *gin.Context) {
 	c.JSON(http.StatusOK, resposta)
 }
 
+func (h *EventoHandler) ListarEventosDisponiveis(c *gin.Context) {
+	eventos, apiErr := h.service.ListarEventosDisponiveis(time.Now())
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	grupos := make([]models.EventosPorOrganizadorDTO, 0)
+	indices := make(map[uint64]int)
+	for _, evento := range eventos {
+		grupoIndex, ok := indices[evento.OrganizadorID]
+		if !ok {
+			grupoIndex = len(grupos)
+			indices[evento.OrganizadorID] = grupoIndex
+			grupos = append(grupos, models.EventosPorOrganizadorDTO{
+				Organizador: models.NovoEventoDisponivelDTO(evento).Organizador,
+				Eventos:     make([]models.EventoDisponivelDTO, 0),
+			})
+		}
+		grupos[grupoIndex].Eventos = append(grupos[grupoIndex].Eventos, models.NovoEventoDisponivelDTO(evento))
+	}
+	c.JSON(http.StatusOK, grupos)
+}
+
+func (h *EventoHandler) BuscarDisponivelPorID(c *gin.Context) {
+	id, ok := parseID(c, "id")
+	if !ok {
+		return
+	}
+	evento, apiErr := h.service.BuscarPorID(id)
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	now := time.Now()
+	if !evento.Publicado || evento.DataFim.Before(now) {
+		c.JSON(http.StatusNotFound, gin.H{"erro": "evento não encontrado"})
+		return
+	}
+	c.JSON(http.StatusOK, models.NovoEventoDetalhadoDTO(*evento))
+}
+
 func (h *EventoHandler) ListarTiposIngresso(c *gin.Context) {
 	tipos, apiErr := h.service.ListarTiposIngresso()
 	if apiErr != nil {

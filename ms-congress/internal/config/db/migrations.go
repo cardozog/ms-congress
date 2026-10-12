@@ -30,9 +30,6 @@ func RunMigrations(ctx context.Context, database *gorm.DB) error {
 	if err := database.AutoMigrate(&Migration{}); err != nil {
 		return err
 	}
-	if err := database.Exec("ALTER TABLE evento_ingressos DROP COLUMN IF EXISTS disponivel").Error; err != nil {
-		return err
-	}
 
 	if err := database.AutoMigrate(
 		&models.Usuario{},

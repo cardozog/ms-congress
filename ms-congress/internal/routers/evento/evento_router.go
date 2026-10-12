@@ -4,9 +4,11 @@ import (
 	handlers "ms-congress/internal/handlers/evento"
 	repo "ms-congress/internal/repositories/evento"
 	services "ms-congress/internal/services/evento"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	middlewares "ms-congress/internal/middlewares"
 )
 
 func SetupEventoRoutes(router *gin.RouterGroup, db *gorm.DB) {
@@ -15,6 +17,9 @@ func SetupEventoRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	handler := handlers.NewEventoHandler(service)
 
 	eventos := router.Group("/eventos")
+	eventos.GET("/disponiveis", handler.ListarEventosDisponiveis)
+	eventos.GET("/disponiveis/:id", handler.BuscarDisponivelPorID)
+	eventos.Use(middlewares.AuthMiddleware(os.Getenv("JWT_SECRET")), middlewares.RequireAnyRole("ADMIN", "ORGANIZADOR", "IMPRENSA"))
 	eventos.POST("", handler.Criar)
 	eventos.GET("/tipos-ingresso", handler.ListarTiposIngresso)
 	eventos.GET("/organizador/:organizadorId", handler.BuscarPorOrganizador)
