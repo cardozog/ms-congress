@@ -5,6 +5,7 @@ import (
 	handlers "ms-congress/internal/handlers/cadastro"
 	cadastro "ms-congress/internal/repositories/cadastro"
 	carrinhoRouter "ms-congress/internal/routers/carrinho"
+	checkinRouter "ms-congress/internal/routers/checkin"
 	eventoRouter "ms-congress/internal/routers/evento"
 	loginRouter "ms-congress/internal/routers/login"
 	meusEventosRouter "ms-congress/internal/routers/meus_eventos"
@@ -29,6 +30,7 @@ func InitApp(ctx context.Context, db *gorm.DB) (*gin.Engine, error) {
 	carrinhoRouter.SetupCarrinhoRoutes(v1Group, db)
 	pedidoRouter.SetupPedidoRoutes(v1Group, db)
 	meusEventosRouter.Setup(v1Group, db)
+	checkinRouter.Setup(v1Group, db)
 	loginRouter.SetupLoginRoutes(v1Group, db)
 	usuarioRouter.SetupUsuarioRoutes(v1Group, db)
 	return router, nil

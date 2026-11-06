@@ -60,6 +60,14 @@ type Ingresso struct {
 	Codigo    string `gorm:"not null;uniqueIndex"`
 	Status    string `gorm:"not null"`
 	VendidoEm *time.Time
+	CheckinEm *time.Time
 
 	EventoIngresso EventoIngresso `gorm:"foreignKey:EventoIngressoID"`
 }
+
+const (
+	StatusIngressoDisponivel = "DISPONIVEL"
+	StatusIngressoReservado  = "RESERVADO"
+	StatusIngressoVendido    = "VENDIDO"
+	StatusIngressoCheckin    = "CHECKED_IN"
+)

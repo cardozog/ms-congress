@@ -351,6 +351,54 @@
 .credential-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:22px; }
 .credential-card { border:1px solid var(--line); padding:18px; display:flex; flex-direction:column; gap:8px; background:var(--paper); }
 .credential-card span { color:var(--muted); font-size:12px; }
+.credential-card small { color:var(--muted); font-size:12px; }
+.credential-card .checkin-success { color:var(--mint-dark); font-weight:bold; }
+.checkins-view { max-width:1100px; padding:50px clamp(24px,6vw,88px); }
+.checkin-search { display:flex; gap:10px; max-width:680px; margin:24px 0; }
+.checkin-search input { flex:1; }
+.checkin-list { display:grid; gap:12px; }
+.checkin-card { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:20px; border:1px solid var(--line); background:var(--surface); }
+.checkin-card h3 { margin:5px 0 8px; font-family:Georgia,serif; font-size:24px; font-weight:normal; }
+.checkin-card p,.checkin-card small { display:block; margin:0 0 6px; color:var(--muted); font-size:12px; }
+.credential-print { width:min(100%, 520px); margin:30px auto; overflow:hidden; border:1px solid var(--line); background:#fff; box-shadow:0 16px 40px #263f3417; }
+.credential-print-top { min-height:130px; display:flex; align-items:end; gap:12px; padding:24px; color:#fff; background:linear-gradient(135deg,#13b4df,#2364a4); font-size:22px; font-weight:bold; }
+.credential-print-top img { max-width:100px; max-height:50px; object-fit:contain; }
+.credential-print-body { display:flex; flex-direction:column; align-items:center; gap:10px; padding:28px 24px 24px; text-align:center; }
+.credential-print-body h1 { font-size:26px; }
+.credential-print-body h2 { margin:8px 0 0; font-size:28px; }
+.credential-role { margin:0; color:var(--muted); font-weight:bold; }
+.credential-print-details { width:100%; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:12px 0; text-align:left; }
+.credential-print-details span { color:var(--muted); font-size:10px; text-transform:uppercase; }
+.credential-print-details strong { display:block; margin-top:5px; color:var(--ink); font-size:11px; overflow-wrap:anywhere; }
+.credential-print-body code { font-size:11px; letter-spacing:.05em; }
+.credential-actions { display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; background:var(--paper); }
+@page { size:A4 portrait; margin:0; }
+@media print {
+  html, body { width:100%; min-height:100%; margin:0; padding:0; }
+  body { background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body * { visibility:hidden; }
+  .credential-print, .credential-print * { visibility:visible; }
+  .credential-print {
+    position:absolute;
+    inset:0;
+    width:100vw;
+    min-height:100vh;
+    margin:0;
+    border:0;
+    box-shadow:none;
+    overflow:visible;
+  }
+  .credential-print-top { min-height:30vh; padding:8vh 10vw; font-size:clamp(28px,4vw,48px); }
+  .credential-print-top img { max-width:180px; max-height:90px; }
+  .credential-print-body { min-height:70vh; justify-content:center; padding:8vh 10vw; gap:18px; }
+  .credential-print-body h1 { font-size:clamp(30px,4vw,52px); }
+  .credential-print-body h2 { font-size:clamp(34px,5vw,64px); }
+  .credential-print-details { max-width:900px; gap:24px; }
+  .credential-print-details span { font-size:14px; }
+  .credential-print-details strong { font-size:18px; }
+  .credential-print-body code { font-size:14px; }
+  .no-print { display:none !important; }
+}
 .credential-card code { letter-spacing:.08em; font-size:14px; }
 .credential-card .secondary-button { margin-top:8px; }
 .qr-modal-backdrop { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:20px; background:rgba(24,35,30,.52); }
