@@ -1,4 +1,4 @@
-import type { AvailableEventGroup, Cart, EventDetails, EventPayload, EventSummary, MyEvent, Order, Profile, Session, TicketType } from '../types'
+import type { AcquiredTicket, AvailableEventGroup, Cart, EventCheckin, EventDetails, EventPayload, EventSummary, MyEvent, Order, Profile, Session, TicketType } from '../types'
 
 const API_BASE_URL = 'http://localhost:8080/v1/api'
 const SESSION_KEY = 'ms-congress-session'
@@ -48,6 +48,10 @@ export function getProfile(session: Session) { return request<Profile>(`/usuario
 export function getEvents(session: Session, organizerId: number) { return request<EventSummary[]>(`/eventos/organizador/${organizerId}`, {}, session) }
 export function getTicketTypes(session: Session) { return request<TicketType[]>('/eventos/tipos-ingresso', {}, session) }
 export function getEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/${id}`, {}, session) }
+export function getEventCheckins(session: Session, eventId: number, search = '') {
+  const query = search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ''
+  return request<{ checkins: EventCheckin[]; total: number }>(`/checkins/eventos/${eventId}${query}`, {}, session)
+}
 export function getAvailableEvents(session: Session) { return request<AvailableEventGroup[]>('/eventos/disponiveis', {}, session) }
 export function getAvailableEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/disponiveis/${id}`, {}, session) }
 export function createEvent(session: Session, payload: EventPayload) { return request<EventDetails>('/eventos', { method: 'POST', body: JSON.stringify(payload) }, session) }
@@ -72,3 +76,6 @@ export function simulatePayment(session: Session, orderId: number, approved: boo
 }
 export function getMyEvents(session: Session) { return request<MyEvent[]>('/meus-eventos', {}, session) }
 export function getMyEvent(session: Session, eventId: number) { return request<MyEvent>(`/meus-eventos/${eventId}`, {}, session) }
+export function checkInTicket(session: Session, eventId: number, ticketId: number) {
+  return request<AcquiredTicket>(`/meus-eventos/${eventId}/ingressos/${ticketId}/checkin`, { method: 'POST' }, session)
+}

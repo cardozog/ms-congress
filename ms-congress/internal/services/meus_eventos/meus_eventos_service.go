@@ -1,7 +1,9 @@
 package services
 
 import (
+	"errors"
 	"net/http"
+	"time"
 
 	"ms-congress/internal/erros"
 	eventomodels "ms-congress/internal/models/evento"
@@ -30,4 +32,21 @@ func (s *Service) ListarPorEvento(usuarioID uint, eventoID uint64) ([]eventomode
 		return nil, &erros.ApiError{StatusCode: http.StatusInternalServerError, Error: err}
 	}
 	return ingressos, nil
+}
+
+func (s *Service) CheckIn(usuarioID uint, eventoID, ingressoID uint64) (*eventomodels.Ingresso, *erros.ApiError) {
+	ingresso, err := s.repository.CheckIn(usuarioID, eventoID, ingressoID, time.Now())
+	if err != nil {
+		switch {
+		case errors.Is(err, repositories.ErrIngressoNaoEncontrado):
+			return nil, &erros.ApiError{StatusCode: http.StatusNotFound, Error: erros.ErroIngressoNaoEncontrado}
+		case errors.Is(err, repositories.ErrIngressoJaUtilizado):
+			return nil, &erros.ApiError{StatusCode: http.StatusConflict, Error: erros.ErroIngressoJaUtilizado}
+		case errors.Is(err, repositories.ErrCheckinForaPeriodo):
+			return nil, &erros.ApiError{StatusCode: http.StatusConflict, Error: erros.ErroCheckinForaDoPeriodo}
+		default:
+			return nil, &erros.ApiError{StatusCode: http.StatusInternalServerError, Error: err}
+		}
+	}
+	return ingresso, nil
 }

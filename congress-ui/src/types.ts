@@ -58,6 +58,20 @@ export interface EventDetails extends EventSummary {
   ingressos: TicketDetails[]
 }
 
+export interface EventCheckin {
+  ingressoId: number
+  codigo: string
+  checkinEm: string
+  tipoIngresso: string
+  evento: string
+  eventoLogo?: string
+  participanteId: number
+  nome: string
+  cpf: string
+  email: string
+  dataNascimento?: string
+}
+
 export interface TicketDetails {
   id: number
   eventoID: number
@@ -88,6 +102,7 @@ export interface Cart {
 export interface Order {
   id: number
   status: string
+  checkinEm?: string
   subtotal: number
   total: number
   expiraEm: string

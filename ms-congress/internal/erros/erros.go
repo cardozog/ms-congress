@@ -40,3 +40,9 @@ var ErroUsuarioNaoAutorizado = errors.New("usuário não autorizado")
 var ErroDadosCadastroInvalidos = errors.New("dados de cadastro inválidos")
 
 var ErroDadosJaCadastrados = errors.New("email ou cpf já cadastrado")
+
+var ErroIngressoNaoEncontrado = errors.New("ingresso não encontrado")
+
+var ErroCheckinForaDoPeriodo = errors.New("o check-in só está disponível durante o evento")
+
+var ErroIngressoJaUtilizado = errors.New("este ingresso já foi utilizado no check-in")

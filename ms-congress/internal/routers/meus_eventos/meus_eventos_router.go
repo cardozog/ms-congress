@@ -16,4 +16,5 @@ func Setup(router *gin.RouterGroup, db *gorm.DB) {
 	events := router.Group("/meus-eventos", middlewares.AuthMiddleware(os.Getenv("JWT_SECRET")), middlewares.RequireRole("PARTICIPANTE"))
 	events.GET("", handler.Listar)
 	events.GET("/:eventoId", handler.Detalhar)
+	events.POST("/:eventoId/ingressos/:ingressoId/checkin", handler.CheckIn)
 }

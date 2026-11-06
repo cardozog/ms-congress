@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"ms-congress/internal/erros"
+	eventomodels "ms-congress/internal/models/evento"
 	repositories "ms-congress/internal/repositories/meus_eventos"
 	services "ms-congress/internal/services/meus_eventos"
 )
@@ -81,11 +82,38 @@ func (h *Handler) Detalhar(c *gin.Context) {
 	evento := ingressos[0].EventoIngresso.Evento
 	tickets := make([]gin.H, 0, len(ingressos))
 	for _, ingresso := range ingressos {
-		tickets = append(tickets, gin.H{"id": ingresso.ID, "codigo": ingresso.Codigo, "qrCode": qrPayload(ingresso.Codigo), "status": ingresso.Status, "eventoId": evento.ID, "evento": evento.Nome, "ingresso": ingresso.EventoIngresso.TipoIngresso.Nome, "eventoLogo": evento.EventoLogo})
+		tickets = append(tickets, ticketResponse(ingresso, evento))
 	}
 
 	response := gin.H{"id": evento.ID, "nome": evento.Nome, "dataInicio": evento.DataInicio, "dataFim": evento.DataFim, "classificacao": repositories.ClassificarEvento(evento, time.Now()), "eventoLogo": evento.EventoLogo, "organizador": evento.Organizador, "quantidade": len(tickets), "ingressos": tickets}
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) CheckIn(c *gin.Context) {
+	eventoID, err := strconv.ParseUint(c.Param("eventoId"), 10, 64)
+	if err != nil || eventoID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"erro": "identificador do evento inválido"})
+		return
+	}
+	ingressoID, err := strconv.ParseUint(c.Param("ingressoId"), 10, 64)
+	if err != nil || ingressoID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"erro": "identificador do ingresso inválido"})
+		return
+	}
+	ingresso, apiErr := h.service.CheckIn(c.GetUint("usuarioID"), eventoID, ingressoID)
+	if apiErr != nil {
+		erros.HandleErrorWithStatus(c, apiErr)
+		return
+	}
+	c.JSON(http.StatusOK, ticketResponse(*ingresso, ingresso.EventoIngresso.Evento))
+}
+
+func ticketResponse(ingresso eventomodels.Ingresso, evento eventomodels.Evento) gin.H {
+	response := gin.H{"id": ingresso.ID, "codigo": ingresso.Codigo, "qrCode": qrPayload(ingresso.Codigo), "status": ingresso.Status, "eventoId": evento.ID, "evento": evento.Nome, "ingresso": ingresso.EventoIngresso.TipoIngresso.Nome, "eventoLogo": evento.EventoLogo}
+	if ingresso.CheckinEm != nil {
+		response["checkinEm"] = ingresso.CheckinEm
+	}
+	return response
 }
 
 func qrPayload(code string) string {
