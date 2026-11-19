@@ -1,0 +1,70 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Visitante" as Visitante
+actor "Congressista" as Congressista
+actor "Organizador" as Organizador
+actor "Administrador" as Administrador
+actor "Imprensa" as Imprensa
+
+rectangle "MS Congress" {
+  usecase "Consultar eventos publicados\ne detalhes" as UC_ConsultarEventos
+  usecase "Cadastrar-se como\ncongressista" as UC_Cadastrar
+  usecase "Autenticar-se" as UC_Login
+  usecase "Gerenciar carrinho" as UC_Carrinho
+  usecase "Realizar compra de ingressos" as UC_Comprar
+  usecase "Criar pedido" as UC_CriarPedido
+  usecase "Processar pagamento" as UC_Pagar
+  usecase "Simular aprovação ou recusa\ndo pagamento" as UC_SimularPagamento
+  usecase "Consultar ingressos adquiridos\ne credenciais digitais" as UC_Ingressos
+  usecase "Visualizar QR Code" as UC_QRCode
+  usecase "Fazer check-in do próprio ingresso" as UC_CheckinProprio
+  usecase "Gerenciar eventos e ingressos" as UC_GerenciarEventos
+  usecase "Consultar check-ins e imprimir\ncredenciais de participantes" as UC_Checkins
+  usecase "Consultar relatório de eventos" as UC_Relatorios
+  usecase "Consultar e atualizar perfil" as UC_Perfil
+}
+
+Visitante --> UC_ConsultarEventos
+Visitante --> UC_Cadastrar
+
+Congressista --> UC_Login
+Congressista --> UC_ConsultarEventos
+Congressista --> UC_Carrinho
+Congressista --> UC_Comprar
+Congressista --> UC_SimularPagamento
+Congressista --> UC_Ingressos
+Congressista --> UC_QRCode
+Congressista --> UC_CheckinProprio
+
+UC_Comprar ..> UC_CriarPedido : <<include>>
+UC_Comprar ..> UC_Pagar : <<include>>
+UC_SimularPagamento ..> UC_Pagar : <<extend>>
+UC_QRCode ..> UC_Ingressos : <<extend>>
+
+Organizador --> UC_Login
+Organizador --> UC_GerenciarEventos
+Organizador --> UC_Checkins
+Organizador --> UC_Relatorios
+Organizador --> UC_Perfil
+
+Administrador --> UC_Login
+Administrador --> UC_GerenciarEventos
+Administrador --> UC_Perfil
+
+Imprensa --> UC_Login
+Imprensa --> UC_GerenciarEventos
+Imprensa --> UC_Perfil
+
+note right of UC_SimularPagamento
+  A aprovação ou recusa é uma
+  simulação disponível no fluxo
+  de demonstração do projeto.
+end note
+
+note bottom of UC_CheckinProprio
+  O check-in do congressista é permitido
+  durante o período do evento.
+end note
+@enduml

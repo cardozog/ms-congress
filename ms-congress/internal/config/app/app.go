@@ -10,6 +10,7 @@ import (
 	loginRouter "ms-congress/internal/routers/login"
 	meusEventosRouter "ms-congress/internal/routers/meus_eventos"
 	pedidoRouter "ms-congress/internal/routers/pedido"
+	relatorioRouter "ms-congress/internal/routers/relatorio"
 	usuarioRouter "ms-congress/internal/routers/usuario"
 	services "ms-congress/internal/services/cadastro"
 	"net/http"
@@ -30,6 +31,7 @@ func InitApp(ctx context.Context, db *gorm.DB) (*gin.Engine, error) {
 	carrinhoRouter.SetupCarrinhoRoutes(v1Group, db)
 	pedidoRouter.SetupPedidoRoutes(v1Group, db)
 	meusEventosRouter.Setup(v1Group, db)
+	relatorioRouter.Setup(v1Group, db)
 	checkinRouter.Setup(v1Group, db)
 	loginRouter.SetupLoginRoutes(v1Group, db)
 	usuarioRouter.SetupUsuarioRoutes(v1Group, db)
@@ -48,7 +50,7 @@ func corsMiddleware() gin.HandlerFunc {
 			}
 		}
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, Idempotency-Key")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, Idempotency-Key, X-Organizador-ID")
 		c.Header("Vary", "Origin")
 
 		if c.Request.Method == http.MethodOptions {

@@ -493,3 +493,33 @@
     .public-nav nav a { padding: 8px 0; }
     .public-user { display: none; }
   }
+
+.report-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:30px; }
+.report-metric { display:grid; gap:12px; min-width:0; padding:22px; border:1px solid var(--line); background:var(--surface); }
+.report-metric span { color:var(--muted); font-size:11px; }
+.report-metric strong { overflow-wrap:anywhere; color:var(--mint-dark); font-size:clamp(20px,2.4vw,30px); }
+.report-filters { display:grid; grid-template-columns:repeat(2,minmax(180px,220px)) auto; align-items:end; gap:14px; margin-bottom:24px; padding:20px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+.report-filters label { display:grid; gap:7px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; }
+.report-filters input[type=date] { width:100%; min-height:48px; padding:9px 12px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink); color-scheme:light; font:inherit; letter-spacing:normal; cursor:pointer; accent-color:var(--mint-dark); transition:border-color .18s ease, box-shadow .18s ease; }
+.report-filters input[type=date]:hover { border-color:var(--mint-dark); }
+.report-filters input[type=date]:focus-visible { outline:0; border-color:var(--mint-dark); box-shadow:0 0 0 3px color-mix(in srgb,var(--mint-dark) 16%,transparent); }
+.report-filters input[type=date]::-webkit-calendar-picker-indicator { padding:4px; border-radius:5px; cursor:pointer; }
+.report-filters .primary-button { width:auto; min-width:120px; min-height:44px; padding:10px 18px; justify-self:start; white-space:nowrap; }
+.report-table-container { overflow-x:auto; border:1px solid var(--line); background:var(--surface); }
+.report-table { width:100%; min-width:880px; border-collapse:collapse; text-align:left; }
+.report-table th,.report-table td { padding:15px 18px; border-bottom:1px solid var(--line); }
+.report-table thead th { color:var(--muted); background:var(--paper); font-size:11px; font-weight:700; white-space:nowrap; }
+.report-table tbody tr:last-child th,.report-table tbody tr:last-child td { border-bottom:0; }
+.report-event-name { max-width:280px; font-weight:700; }
+.report-number { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.report-table td .secondary-button { white-space:nowrap; }
+.report-empty { margin-top:20px; }
+@media (max-width:800px) {
+  .report-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .report-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .report-filters .primary-button { grid-column:1 / -1; }
+}
+@media (max-width:480px) {
+  .report-summary { grid-template-columns:1fr; }
+  .report-filters { grid-template-columns:1fr; }
+}

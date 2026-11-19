@@ -1,0 +1,195 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+hide empty methods
+
+package "Identidade e perfis" {
+  class Usuario {
+    +id: uint
+    +email: string
+    +senha: string
+    +tipoPessoaID: uint
+  }
+
+  class TipoPessoa {
+    +id: uint
+    +tipo: string
+  }
+
+  class PessoaFisica {
+    +id: uint
+    +usuarioID: uint
+    +nome: string
+    +cpf: string
+    +dataNascimento: string
+  }
+
+  class PessoaJuridica {
+    +id: uint
+    +usuarioID: uint
+    +razaoSocial: string
+    +nomeFantasia: string
+    +cnpj: string
+  }
+
+  class Imprensa {
+    +id: uint
+    +usuarioID: uint
+    +nomeVeiculo: string
+    +site: string
+    +cnpj: string
+  }
+
+  class Role {
+    +id: uint
+    +nome: string
+  }
+
+  class UsuarioRole {
+    +usuarioID: uint
+    +roleID: uint
+  }
+
+  class TelefoneUsuario {
+    +id: uint
+    +usuarioID: uint
+    +numero: string
+  }
+
+  class EnderecoUsuario {
+    +id: uint
+    +usuarioID: uint
+    +logradouro: string
+    +cidade: string
+    +estado: string
+    +cep: string
+    +enderecoCobranca: bool
+  }
+}
+
+package "Eventos e ingressos" {
+  class Evento {
+    +id: uint64
+    +nome: string
+    +descricao: string
+    +dataInicio: time.Time
+    +dataFim: time.Time
+    +publicado: bool
+    +organizadorID: uint64
+    +logradouro: string
+    +cidade: string
+    +estado: string
+    +cep: string
+    +eventoLogo: string
+  }
+
+  class TipoIngresso {
+    +id: uint64
+    +nome: string
+  }
+
+  class EventoIngresso {
+    +id: uint64
+    +eventoID: uint64
+    +tipoIngressoID: uint64
+    +preco: float64
+    +quantidade: int
+    +dataInicioVenda: time.Time
+    +dataFimVenda: time.Time
+  }
+
+  class Ingresso {
+    +id: uint64
+    +eventoIngressoID: uint64
+    +usuarioID: uint?
+    +pedidoID: uint64?
+    +codigo: string
+    +status: string
+    +vendidoEm: time.Time?
+    +checkinEm: time.Time?
+  }
+}
+
+package "Compra e pagamento" {
+  class Carrinho {
+    +id: uint64
+    +usuarioID: uint
+    +criadoEm: time.Time
+    +atualizadoEm: time.Time
+  }
+
+  class CarrinhoItem {
+    +id: uint64
+    +carrinhoID: uint64
+    +eventoIngressoID: uint64
+    +quantidade: int
+    +precoUnitario: float64
+  }
+
+  class Pedido {
+    +id: uint64
+    +usuarioID: uint
+    +status: string
+    +subtotal: float64
+    +total: float64
+    +idempotencyKey: string
+    +expiraEm: time.Time
+    +pagoEm: time.Time?
+    +canceladoEm: time.Time?
+  }
+
+  class PedidoItem {
+    +id: uint64
+    +pedidoID: uint64
+    +eventoIngressoID: uint64
+    +quantidade: int
+    +precoUnitario: float64
+    +subtotal: float64
+  }
+
+  class Pagamento {
+    +id: uint64
+    +pedidoID: uint64
+    +status: string
+    +valor: float64
+    +provedor: string
+    +referenciaExterna: string
+    +idempotencyKey: string
+    +cartaoFinal: string
+    +bandeiraCartao: string
+  }
+}
+
+Usuario "1" *-- "0..*" TelefoneUsuario
+Usuario "1" *-- "0..*" EnderecoUsuario
+Usuario "1" --> "1" TipoPessoa
+Usuario "1" -- "0..1" PessoaFisica
+Usuario "1" -- "0..1" PessoaJuridica
+Usuario "1" -- "0..1" Imprensa
+Usuario "1" -- "0..*" UsuarioRole
+Role "1" -- "0..*" UsuarioRole
+
+PessoaJuridica "1" -- "0..*" Evento : organiza >
+Evento "1" *-- "1..*" EventoIngresso
+TipoIngresso "1" -- "0..*" EventoIngresso
+EventoIngresso "1" *-- "0..*" Ingresso
+
+Usuario "1" -- "0..1" Carrinho
+Carrinho "1" *-- "0..*" CarrinhoItem
+CarrinhoItem "0..*" --> "1" EventoIngresso
+
+Usuario "1" -- "0..*" Pedido
+Pedido "1" *-- "1..*" PedidoItem
+PedidoItem "0..*" --> "1" EventoIngresso
+Pedido "1" -- "0..1" Pagamento
+Usuario "1" -- "0..*" Ingresso : possui >
+Pedido "1" -- "0..*" Ingresso : gera >
+
+note right of Pagamento
+  O fluxo suporta aprovação,
+  rejeição e reembolso
+  simulados pelo demonstrador.
+end note
+
+@enduml
