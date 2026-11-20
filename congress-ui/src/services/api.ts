@@ -1,4 +1,4 @@
-import type { AcquiredTicket, AvailableEventGroup, Cart, EventCheckin, EventDetails, EventPayload, EventSummary, MyEvent, Order, Profile, Session, TicketType } from '../types'
+import type { AcquiredTicket, AvailableEventGroup, Cart, EventCheckin, EventDetails, EventPayload, EventReport, EventSummary, MyEvent, Order, Profile, Session, TicketType } from '../types'
 
 const API_BASE_URL = 'http://localhost:8080/v1/api'
 const SESSION_KEY = 'ms-congress-session'
@@ -51,6 +51,15 @@ export function getEvent(session: Session, id: number) { return request<EventDet
 export function getEventCheckins(session: Session, eventId: number, search = '') {
   const query = search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ''
   return request<{ checkins: EventCheckin[]; total: number }>(`/checkins/eventos/${eventId}${query}`, {}, session)
+}
+export function getOrganizerEventReport(session: Session, organizerId: number, dateFrom: string, dateTo: string) {
+  const params = new URLSearchParams()
+  if (dateFrom) params.set('dataDe', dateFrom)
+  if (dateTo) params.set('dataAte', dateTo)
+  const query = params.toString()
+  return request<EventReport[]>(`/relatorios/eventos${query ? `?${query}` : ''}`, {
+    headers: { 'X-Organizador-ID': String(organizerId) },
+  }, session)
 }
 export function getAvailableEvents(session: Session) { return request<AvailableEventGroup[]>('/eventos/disponiveis', {}, session) }
 export function getAvailableEvent(session: Session, id: number) { return request<EventDetails>(`/eventos/disponiveis/${id}`, {}, session) }

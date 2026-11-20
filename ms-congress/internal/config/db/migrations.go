@@ -185,8 +185,88 @@ func seedData(database *gorm.DB) error {
 		if err := seedIngressos(tx, loteInteira.ID, "MS-CONGRESS-001", loteInteira.Quantidade); err != nil {
 			return err
 		}
-		return seedIngressos(tx, loteMeia.ID, "MS-CONGRESS-002", loteMeia.Quantidade)
+		if err := seedIngressos(tx, loteMeia.ID, "MS-CONGRESS-002", loteMeia.Quantidade); err != nil {
+			return err
+		}
+		return seedReportSales(tx, participante.ID, loteInteira.ID, loteMeia.ID)
 	})
+}
+
+func seedReportSales(database *gorm.DB, participanteID uint, loteInteiraID, loteMeiaID uint64) error {
+	const key = "seed-relatorio-congresso-tecnologia-2026"
+	var pedido pedidos.Pedido
+	err := database.Where("idempotency_key = ?", key).First(&pedido).Error
+	if err == nil {
+		return nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	var ingressosInteira []eventos.Ingresso
+	if err := database.Where("evento_ingresso_id = ? AND status = ?", loteInteiraID, eventos.StatusIngressoDisponivel).
+		Order("id ASC").Limit(2).Find(&ingressosInteira).Error; err != nil {
+		return err
+	}
+	var ingressosMeia []eventos.Ingresso
+	if err := database.Where("evento_ingresso_id = ? AND status = ?", loteMeiaID, eventos.StatusIngressoDisponivel).
+		Order("id ASC").Limit(1).Find(&ingressosMeia).Error; err != nil {
+		return err
+	}
+	if len(ingressosInteira) != 2 || len(ingressosMeia) != 1 {
+		return errors.New("ingressos disponíveis insuficientes para os dados demonstrativos do relatório")
+	}
+
+	pagoEm := time.Date(2026, time.November, 1, 12, 0, 0, 0, time.UTC)
+	checkinEm := time.Date(2026, time.November, 10, 10, 0, 0, 0, time.UTC)
+	pedido = pedidos.Pedido{
+		UsuarioID: participanteID, Status: pedidos.StatusPedidoPago,
+		Subtotal: 375, Total: 375, IdempotencyKey: key,
+		ExpiraEm: pagoEm.Add(30 * time.Minute), PagoEm: &pagoEm,
+		CriadoEm: pagoEm, AtualizadoEm: pagoEm,
+	}
+	if err := database.Create(&pedido).Error; err != nil {
+		return err
+	}
+
+	itens := []pedidos.PedidoItem{
+		{PedidoID: pedido.ID, EventoIngressoID: loteInteiraID, Quantidade: 2, PrecoUnitario: 150, Subtotal: 300, CriadoEm: pagoEm},
+		{PedidoID: pedido.ID, EventoIngressoID: loteMeiaID, Quantidade: 1, PrecoUnitario: 75, Subtotal: 75, CriadoEm: pagoEm},
+	}
+	if err := database.Create(&itens).Error; err != nil {
+		return err
+	}
+
+	pagamento := pedidos.Pagamento{
+		PedidoID: pedido.ID, Status: pedidos.StatusPagamentoAprovado, Valor: pedido.Total,
+		Provedor: "seed", ReferenciaExterna: key, IdempotencyKey: key,
+		AprovadoEm: &pagoEm, CriadoEm: pagoEm, AtualizadoEm: pagoEm,
+	}
+	if err := database.Create(&pagamento).Error; err != nil {
+		return err
+	}
+
+	participanteIngressoID := participanteID
+	pedidoID := pedido.ID
+	tickets := []struct {
+		id        uint64
+		status    string
+		checkinEm *time.Time
+	}{
+		{id: ingressosInteira[0].ID, status: eventos.StatusIngressoCheckin, checkinEm: &checkinEm},
+		{id: ingressosInteira[1].ID, status: eventos.StatusIngressoVendido},
+		{id: ingressosMeia[0].ID, status: eventos.StatusIngressoCheckin, checkinEm: &checkinEm},
+	}
+	for _, ticket := range tickets {
+		updates := map[string]interface{}{
+			"usuario_id": participanteIngressoID, "pedido_id": pedidoID,
+			"status": ticket.status, "vendido_em": pagoEm, "checkin_em": ticket.checkinEm,
+		}
+		if err := database.Model(&eventos.Ingresso{}).Where("id = ?", ticket.id).Updates(updates).Error; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func seedUsuario(database *gorm.DB, email, senha string, tipoPessoaID uint) (models.Usuario, error) {

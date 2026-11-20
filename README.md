@@ -20,7 +20,15 @@ A plataforma busca reduzir processos manuais, facilitar o controle de ingressos 
 * Credencial digital do participante;
 * QR Code para identificação;
 * Check-in dos participantes;
-* Gerenciamento dos participantes pelos organizadores.
+* Gerenciamento dos participantes pelos organizadores;
+* Relatório por evento de ingressos vendidos, presenças e valor arrecadado.
+
+## Dados de demonstração
+
+Na inicialização, o banco recebe a conta `organizador@local.com` e o evento
+`Congresso de Tecnologia 2026`. O relatório desse evento inclui três ingressos
+vendidos, dois check-ins e R$ 375,00 arrecadados. Use a senha definida em
+`ADMIN_PASSWORD` para entrar com a conta de demonstração.
 
 ## Estrutura
 
@@ -50,6 +58,15 @@ ms-congress/
 * **PostgreSQL** — Banco de dados
 * **Docker** — Containers
 * **Docker Compose** — Orquestração dos serviços
+
+## Diagrama de casos de uso
+
+O diagrama dos principais fluxos e perfis está em [docs/casos-de-uso.puml](docs/casos-de-uso.puml)
+e pode ser renderizado com PlantUML.
+
+## Diagrama de classes
+
+O modelo de domínio e suas principais relações estão em [docs/diagrama-classes.puml](docs/diagrama-classes.puml).
 
 ## Pré-requisito
 

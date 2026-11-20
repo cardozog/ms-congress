@@ -72,6 +72,16 @@ export interface EventCheckin {
   dataNascimento?: string
 }
 
+export interface EventReport {
+  id: number
+  nome: string
+  dataInicio: string
+  dataFim: string
+  ingressosVendidos: number
+  presencas: number
+  valorArrecadado: number
+}
+
 export interface TicketDetails {
   id: number
   eventoID: number
